@@ -289,6 +289,1261 @@
     </div>
     <div class="header-right">
       <div class="offline-badge"><div class="offline-dot"></div>offline ready</div>
+      <div class="version">v7.0</div>
+    </div>
+  </header>
+
+  <div class="label">Quick route presets 快速航線</div>
+  <div class="presets">
+    <button class="preset" onclick="loadPreset('tokyo','sydney')">Tokyo → Sydney</button>
+    <button class="preset" onclick="loadPreset('london','nyc')">London → New York</button>
+    <button class="preset" onclick="loadPreset('paris','dubai')">Paris → Dubai</button>
+    <button class="preset" onclick="loadPreset('la','taipei')">LA → Taipei</button>
+    <button class="preset" onclick="loadPreset('cairo','capetown')">Cairo → Cape Town</button>
+    <button class="preset" onclick="loadPreset('moscow','beijing')">Moscow → Beijing</button>
+    <button class="preset" onclick="loadPreset('mumbai','singapore')">Mumbai → Singapore</button>
+  </div>
+
+  <!-- Coordinate mode toggle -->
+  <div class="mode-row">
+    <span class="mode-label">座標格式</span>
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="mode-dec" onclick="setMode('decimal')">十進位 Decimal</button>
+      <button class="mode-btn" id="mode-dms" onclick="setMode('dms')">度° 分′ 秒″ DMS</button>
+    </div>
+  </div>
+
+  <!-- ── POINT A PRESETS DROPDOWN ── -->
+  <div class="label">船舶位置快速預設 Vessel position presets</div>
+  <div class="dest-preset-row">
+    <select id="origin-preset-select" onchange="loadOriginPreset(this.value)">
+      <option value="">— 選擇船舶預設位置 —</option>
+      <optgroup label="🏭 台灣港口 Taiwan Ports">
+        <option value="keelung">基隆港 Keelung Port</option>
+        <option value="taipei_port">台北港 Taipei Port</option>
+        <option value="kaohsiung">高雄港 Kaohsiung Port</option>
+        <option value="hualien">花蓮港 Hualien Port</option>
+      </optgroup>
+      <optgroup label="🗼 本島燈塔 Taiwan Main Island">
+        <option value="lh_pengjia">彭佳嶼 Pengjia Islet</option>
+        <option value="lh_keelung_isl">基隆嶼 Keelung Islet</option>
+        <option value="lh_keelung">基隆 Keelung Harbor</option>
+        <option value="lh_fugui">富貴角 Fuguijiao (N極北)</option>
+        <option value="lh_yeliou">野柳 Yeliou</option>
+        <option value="lh_bitou">鼻頭角 Bitoujiao</option>
+        <option value="lh_sandiao">三貂角 Cape Santiago (E極東)</option>
+        <option value="lh_tamsui">淡水港 Tamsui Harbor</option>
+        <option value="lh_baisha">白沙岬 Baishajia</option>
+        <option value="lh_taichung">台中港 Taichung Port</option>
+        <option value="lh_fangyuan">芳苑 Fangyuan</option>
+        <option value="lh_suao">蘇澳 Su'ao</option>
+        <option value="lh_cilai">奇萊鼻 Cilaibi</option>
+        <option value="lh_hualien_lh">花蓮港 Hualien Port LH</option>
+        <option value="lh_guosheng">國聖港 Guosheng (W極西)</option>
+        <option value="lh_anping">安平 Anping</option>
+        <option value="lh_kaohsiung_lh">高雄旗後 Kaohsiung (Cijin)</option>
+        <option value="lh_eluanbi">鵝鑾鼻 Eluanbi (S極南)</option>
+      </optgroup>
+      <optgroup label="🏝 離島燈塔 Offshore Islands">
+        <option value="lh_lyudao">綠島 Green Island</option>
+        <option value="lh_lanyu">蘭嶼 Orchid Island</option>
+        <option value="lh_mudouyu">目斗嶼 Mudouyu</option>
+        <option value="lh_yuweng">漁翁島 Yuwengdao (西嶼)</option>
+        <option value="lh_dongjyu">東吉嶼 Dongjyu</option>
+        <option value="lh_qimei">七美嶼 Qimei</option>
+        <option value="lh_xiaoliuqiu">琉球嶼 Xiaoliuqiu</option>
+        <option value="lh_taiping">太平島 Taiping Island</option>
+      </optgroup>
+      <optgroup label="🎣 特殊地點 Special">
+        <option value="diaoyutai">釣魚台 Diaoyutai</option>
+      </optgroup>
+    </select>
+  </div>
+
+  <!-- ── RELATIVE BEARING ROW ── -->
+  <div id="rel-bearing-bar" style="display:none;">
+    <div class="rel-bearing-card">
+      <div class="rel-bearing-left">
+        <div class="rel-bearing-label">船相對於目的地方位 Vessel bearing from destination</div>
+        <div class="rel-bearing-value" id="rel-bearing-text">—</div>
+      </div>
+      <div class="rel-compass" id="rel-compass-wrap">
+        <canvas id="compass-canvas" width="72" height="72"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── POINT A (Ship) ── -->
+  <div class="label">Point A — 船舶位置 Vessel position</div>
+  <div class="point-card card-a">
+    <div class="point-header">
+      <div class="badge badge-a">A</div>
+      <span class="point-name">Vessel 船舶</span>
+      <div class="ship-badge">⚓ Origin</div>
+      <span class="city-tag" id="tag-a"></span>
+    </div>
+
+    <div id="dec-a">
+      <div class="input-row">
+        <div class="field">
+          <label>緯度 Latitude (−90 to 90)</label>
+          <input type="number" id="lat1" placeholder="e.g. 51.5074" step="any" oninput="calc()" />
+        </div>
+        <div class="field">
+          <label>經度 Longitude (−180 to 180)</label>
+          <input type="number" id="lon1" placeholder="e.g. −0.1278" step="any" oninput="calc()" />
+        </div>
+      </div>
+    </div>
+
+    <div id="dms-a" style="display:none;">
+      <div class="dms-group">
+        <div class="dms-coord-row">
+          <div class="dms-coord-block">
+            <div class="dms-coord-label">緯度 Latitude</div>
+            <div class="dms-triple">
+              <div class="dms-field"><label>度°</label><div class="dms-input-wrap"><input type="number" id="a-lat-d" min="0" max="90" placeholder="0" oninput="dmsCalc()"><span class="dms-sym">°</span></div></div>
+              <div class="dms-field"><label>分′</label><div class="dms-input-wrap"><input type="number" id="a-lat-m" min="0" max="59" placeholder="0" oninput="dmsCalc()"><span class="dms-sym">′</span></div></div>
+              <div class="dms-field"><label>秒″</label><div class="dms-input-wrap"><input type="number" id="a-lat-s" min="0" max="59.999" step="0.001" placeholder="0.000" oninput="dmsCalc()"><span class="dms-sym">″</span></div></div>
+            </div>
+            <select class="dir-select" id="a-lat-dir" onchange="dmsCalc()"><option value="N">N 北緯</option><option value="S">S 南緯</option></select>
+          </div>
+          <div class="dms-coord-block">
+            <div class="dms-coord-label">經度 Longitude</div>
+            <div class="dms-triple">
+              <div class="dms-field"><label>度°</label><div class="dms-input-wrap"><input type="number" id="a-lon-d" min="0" max="180" placeholder="0" oninput="dmsCalc()"><span class="dms-sym">°</span></div></div>
+              <div class="dms-field"><label>分′</label><div class="dms-input-wrap"><input type="number" id="a-lon-m" min="0" max="59" placeholder="0" oninput="dmsCalc()"><span class="dms-sym">′</span></div></div>
+              <div class="dms-field"><label>秒″</label><div class="dms-input-wrap"><input type="number" id="a-lon-s" min="0" max="59.999" step="0.001" placeholder="0.000" oninput="dmsCalc()"><span class="dms-sym">″</span></div></div>
+            </div>
+            <select class="dir-select" id="a-lon-dir" onchange="dmsCalc()"><option value="E">E 東經</option><option value="W">W 西經</option></select>
+          </div>
+        </div>
+        <div class="dms-preview" id="preview-a">輸入度分秒後顯示十進位預覽</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="swap-wrap">
+    <button class="swap-btn" onclick="swapPoints()">⇅ swap A ↔ B</button>
+  </div>
+
+  <!-- ── POINT B PRESETS DROPDOWN ── -->
+  <div class="label">目的地快速預設 Destination presets</div>
+  <div class="dest-preset-row">
+    <select id="dest-preset-select" onchange="loadDestPreset(this.value)">
+      <option value="">— 選擇預設目的地 —</option>
+      <optgroup label="🏭 台灣港口 Taiwan Ports">
+        <option value="keelung">基隆港 Keelung Port</option>
+        <option value="taipei_port">台北港 Taipei Port</option>
+        <option value="kaohsiung">高雄港 Kaohsiung Port</option>
+        <option value="hualien">花蓮港 Hualien Port</option>
+      </optgroup>
+      <optgroup label="🗼 本島燈塔 Taiwan Main Island">
+        <option value="lh_pengjia">彭佳嶼 Pengjia Islet</option>
+        <option value="lh_keelung_isl">基隆嶼 Keelung Islet</option>
+        <option value="lh_keelung">基隆 Keelung Harbor</option>
+        <option value="lh_fugui">富貴角 Fuguijiao (N極北)</option>
+        <option value="lh_yeliou">野柳 Yeliou</option>
+        <option value="lh_bitou">鼻頭角 Bitoujiao</option>
+        <option value="lh_sandiao">三貂角 Cape Santiago (E極東)</option>
+        <option value="lh_tamsui">淡水港 Tamsui Harbor</option>
+        <option value="lh_baisha">白沙岬 Baishajia</option>
+        <option value="lh_taichung">台中港 Taichung Port</option>
+        <option value="lh_fangyuan">芳苑 Fangyuan</option>
+        <option value="lh_suao">蘇澳 Su'ao</option>
+        <option value="lh_cilai">奇萊鼻 Cilaibi</option>
+        <option value="lh_hualien_lh">花蓮港 Hualien Port LH</option>
+        <option value="lh_guosheng">國聖港 Guosheng (W極西)</option>
+        <option value="lh_anping">安平 Anping</option>
+        <option value="lh_kaohsiung_lh">高雄旗後 Kaohsiung (Cijin)</option>
+        <option value="lh_eluanbi">鵝鑾鼻 Eluanbi (S極南)</option>
+      </optgroup>
+      <optgroup label="🏝 離島燈塔 Offshore Islands">
+        <option value="lh_lyudao">綠島 Green Island</option>
+        <option value="lh_lanyu">蘭嶼 Orchid Island</option>
+        <option value="lh_mudouyu">目斗嶼 Mudouyu</option>
+        <option value="lh_yuweng">漁翁島 Yuwengdao (西嶼)</option>
+        <option value="lh_dongjyu">東吉嶼 Dongjyu</option>
+        <option value="lh_qimei">七美嶼 Qimei</option>
+        <option value="lh_xiaoliuqiu">琉球嶼 Xiaoliuqiu</option>
+        <option value="lh_taiping">太平島 Taiping Island</option>
+      </optgroup>
+      <optgroup label="🎣 特殊地點 Special">
+        <option value="diaoyutai">釣魚台 Diaoyutai</option>
+      </optgroup>
+    </select>
+  </div>
+
+  <!-- ── POINT B ── -->
+  <div class="label">Point B — 目的地 Destination</div>
+  <div class="point-card card-b">
+    <div class="point-header">
+      <div class="badge badge-b">B</div>
+      <span class="point-name">Destination 目的地</span>
+      <span class="city-tag" id="tag-b"></span>
+    </div>
+
+    <div id="dec-b">
+      <div class="input-row">
+        <div class="field">
+          <label>緯度 Latitude (−90 to 90)</label>
+          <input type="number" id="lat2" placeholder="e.g. 40.7128" step="any" oninput="calc()" />
+        </div>
+        <div class="field">
+          <label>經度 Longitude (−180 to 180)</label>
+          <input type="number" id="lon2" placeholder="e.g. −74.0060" step="any" oninput="calc()" />
+        </div>
+      </div>
+    </div>
+
+    <div id="dms-b" style="display:none;">
+      <div class="dms-group">
+        <div class="dms-coord-row">
+          <div class="dms-coord-block">
+            <div class="dms-coord-label">緯度 Latitude</div>
+            <div class="dms-triple">
+              <div class="dms-field"><label>度°</label><div class="dms-input-wrap"><input type="number" id="b-lat-d" min="0" max="90" placeholder="0" oninput="dmsCalc()"><span class="dms-sym">°</span></div></div>
+              <div class="dms-field"><label>分′</label><div class="dms-input-wrap"><input type="number" id="b-lat-m" min="0" max="59" placeholder="0" oninput="dmsCalc()"><span class="dms-sym">′</span></div></div>
+              <div class="dms-field"><label>秒″</label><div class="dms-input-wrap"><input type="number" id="b-lat-s" min="0" max="59.999" step="0.001" placeholder="0.000" oninput="dmsCalc()"><span class="dms-sym">″</span></div></div>
+            </div>
+            <select class="dir-select" id="b-lat-dir" onchange="dmsCalc()"><option value="N">N 北緯</option><option value="S">S 南緯</option></select>
+          </div>
+          <div class="dms-coord-block">
+            <div class="dms-coord-label">經度 Longitude</div>
+            <div class="dms-triple">
+              <div class="dms-field"><label>度°</label><div class="dms-input-wrap"><input type="number" id="b-lon-d" min="0" max="180" placeholder="0" oninput="dmsCalc()"><span class="dms-sym">°</span></div></div>
+              <div class="dms-field"><label>分′</label><div class="dms-input-wrap"><input type="number" id="b-lon-m" min="0" max="59" placeholder="0" oninput="dmsCalc()"><span class="dms-sym">′</span></div></div>
+              <div class="dms-field"><label>秒″</label><div class="dms-input-wrap"><input type="number" id="b-lon-s" min="0" max="59.999" step="0.001" placeholder="0.000" oninput="dmsCalc()"><span class="dms-sym">″</span></div></div>
+            </div>
+            <select class="dir-select" id="b-lon-dir" onchange="dmsCalc()"><option value="E">E 東經</option><option value="W">W 西經</option></select>
+          </div>
+        </div>
+        <div class="dms-preview" id="preview-b">輸入度分秒後顯示十進位預覽</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── VESSEL SPEED ── -->
+  <div class="label" style="margin-top:1.25rem;">⚓ 船舶設定 Vessel settings</div>
+  <div class="vessel-card">
+    <div class="vessel-header">
+      <div class="vessel-icon">🚢</div>
+      <div>
+        <div class="vessel-title">Vessel Speed &amp; Departure</div>
+        <div class="vessel-sub">航速與出發時間</div>
+      </div>
+    </div>
+
+    <div class="speed-row">
+      <div class="field">
+        <label>船速 Speed (knots)</label>
+        <div class="speed-input-wrap">
+          <input type="number" id="vessel-speed" min="0.1" max="50" step="0.1" placeholder="e.g. 12" oninput="calc()" />
+          <span class="speed-unit-tag">kn</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>建議船速範圍</label>
+        <select id="speed-preset" onchange="applySpeedPreset()" style="font-size:12px;">
+          <option value="">— 選擇船型 —</option>
+          <option value="6">帆船 Sailboat ~6 kn</option>
+          <option value="10">慢速貨船 Cargo ~10 kn</option>
+          <option value="14">一般貨船 General ~14 kn</option>
+          <option value="18">快速貨船 Fast cargo ~18 kn</option>
+          <option value="22">高速客輪 Ferry ~22 kn</option>
+          <option value="28">高速艇 Fast craft ~28 kn</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>航行效率 Efficiency</label>
+        <select id="efficiency" onchange="calc()" style="font-size:12px;">
+          <option value="1.0">100% 直線航行</option>
+          <option value="1.1">90% 輕微偏航</option>
+          <option value="1.15" selected>85% 一般海況</option>
+          <option value="1.25">75% 複雜海況</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="depart-row">
+      <div class="depart-field">
+        <label>出發日期 Departure date (UTC)</label>
+        <input type="date" id="depart-date" oninput="calc()" />
+      </div>
+      <div class="depart-field">
+        <label>出發時間 Departure time (UTC)</label>
+        <input type="time" id="depart-time" oninput="calc()" />
+      </div>
+      <button class="now-btn" onclick="setNow()">⏱ 設為現在時間 Set Now (UTC)</button>
+    </div>
+  </div>
+
+  <!-- Distance unit -->
+  <div class="label" style="margin-top:0.5rem;">距離單位 Distance unit</div>
+  <div class="unit-row">
+    <button class="unit-btn active" id="u-km" onclick="setUnit('km')">公里 km</button>
+    <button class="unit-btn" id="u-mi" onclick="setUnit('mi')">英里 mi</button>
+    <button class="unit-btn active2" id="u-nm" onclick="setUnit('nm')">海里 NM ⚓</button>
+  </div>
+
+  <div id="result-area" class="result-wrap">
+    <div class="empty-state">填入起點與終點座標，設定船速後開始計算</div>
+  </div>
+
+  <footer>
+    <span>Haversine formula · Earth R = 6,371 km · 1 knot = 1.852 km/h</span>
+    <span>100% offline · 不傳送任何資料</span>
+  </footer>
+</div>
+
+<script>
+  let unit = 'nm'; // default nautical for marine use
+  let coordMode = 'decimal';
+  const R = { km:6371, mi:3958.8, nm:3440.065 };
+  const unitLabel = { km:'km', mi:'mi', nm:'NM' };
+
+  // Set default unit buttons
+  document.getElementById('u-nm').classList.add('active');
+  document.getElementById('u-km').classList.remove('active');
+
+  // ── Destination presets (ports + lighthouses) ──────────────
+  const destPresets = {
+    // Taiwan ports
+    keelung:         {name:'基隆港 Keelung Port',        lat:25.164096, lon:121.753846},
+    taipei_port:     {name:'台北港 Taipei Port',          lat:25.155131, lon:121.358861},
+    kaohsiung:       {name:'高雄港 Kaohsiung Port',       lat:22.599017, lon:120.288430},
+    hualien:         {name:'花蓮港 Hualien Port',          lat:23.976130, lon:121.625600},
+    // Special
+    diaoyutai:       {name:'釣魚台 Diaoyutai Island',     lat:25.743333, lon:123.473333},
+    // Main island lighthouses (source: Wikipedia / MOTCMPB, WGS-84)
+    lh_pengjia:      {name:'彭佳嶼 Pengjia Islet',        lat:25.633,    lon:122.067},
+    lh_keelung_isl:  {name:'基隆嶼 Keelung Islet',        lat:25.200,    lon:121.783},
+    lh_keelung:      {name:'基隆 Keelung Harbor',         lat:25.1583,   lon:121.7400},
+    lh_fugui:        {name:'富貴角 Fuguijiao',             lat:25.298111, lon:121.536619},
+    lh_yeliou:       {name:'野柳 Yeliou',                 lat:25.217,    lon:121.683},
+    lh_bitou:        {name:'鼻頭角 Bitoujiao',             lat:25.133,    lon:121.917},
+    lh_sandiao:      {name:'三貂角 Cape Santiago',         lat:25.017,    lon:122.000},
+    lh_tamsui:       {name:'淡水港 Tamsui Harbor',         lat:25.183,    lon:121.417},
+    lh_baisha:       {name:'白沙岬 Baishajia',             lat:25.050,    lon:121.067},
+    lh_taichung:     {name:'台中港 Taichung Port',         lat:25.317,    lon:120.517},
+    lh_fangyuan:     {name:'芳苑 Fangyuan',               lat:23.967,    lon:120.317},
+    lh_suao:         {name:'蘇澳 Su\'ao',                 lat:24.600,    lon:121.883},
+    lh_cilai:        {name:'奇萊鼻 Cilaibi',              lat:24.017,    lon:121.633},
+    lh_hualien_lh:   {name:'花蓮港 Hualien Port (LH)',    lat:23.983,    lon:121.600},
+    lh_guosheng:     {name:'國聖港 Guosheng (極西)',       lat:23.100,    lon:120.033},
+    lh_anping:       {name:'安平 Anping',                 lat:23.000,    lon:120.133},
+    lh_kaohsiung_lh: {name:'高雄旗後 Kaohsiung (Cijin)',  lat:22.617,    lon:120.250},
+    lh_eluanbi:      {name:'鵝鑾鼻 Eluanbi (極南)',        lat:21.900,    lon:120.850},
+    // Offshore island lighthouses
+    lh_lyudao:       {name:'綠島 Green Island',           lat:22.683,    lon:121.467},
+    lh_lanyu:        {name:'蘭嶼 Orchid Island',          lat:22.083,    lon:121.500},
+    lh_mudouyu:      {name:'目斗嶼 Mudouyu',              lat:23.783,    lon:119.600},
+    lh_yuweng:       {name:'漁翁島 Yuwengdao (西嶼)',      lat:23.583,    lon:119.483},
+    lh_dongjyu:      {name:'東吉嶼 Dongjyu',              lat:23.250,    lon:119.667},
+    lh_qimei:        {name:'七美嶼 Qimei',                lat:23.217,    lon:119.417},
+    lh_xiaoliuqiu:   {name:'琉球嶼 Xiaoliuqiu',           lat:22.350,    lon:120.367},
+    lh_taiping:      {name:'太平島 Taiping Island',        lat:10.367,    lon:114.350},
+  };
+
+  function loadDestPreset(key){
+    if(!key) return;
+    const p=destPresets[key];
+    document.getElementById('tag-b').textContent=p.name;
+    document.getElementById('lat2').value=p.lat;
+    document.getElementById('lon2').value=p.lon;
+    if(coordMode==='dms'){fillDMSInputs('b',p.lat,p.lon);dmsCalc();}
+    else calc();
+  }
+
+  function loadOriginPreset(key){
+    if(!key) return;
+    const p=destPresets[key];
+    document.getElementById('tag-a').textContent=p.name;
+    document.getElementById('lat1').value=p.lat;
+    document.getElementById('lon1').value=p.lon;
+    if(coordMode==='dms'){fillDMSInputs('a',p.lat,p.lon);dmsCalc();}
+    else calc();
+  }
+
+  const presets = {
+    tokyo:     {name:'Tokyo, JP',       lat:35.6762,  lon:139.6503},
+    sydney:    {name:'Sydney, AU',      lat:-33.8688, lon:151.2093},
+    london:    {name:'London, UK',      lat:51.5074,  lon:-0.1278 },
+    nyc:       {name:'New York, US',    lat:40.7128,  lon:-74.0060},
+    paris:     {name:'Paris, FR',       lat:48.8566,  lon:2.3522  },
+    dubai:     {name:'Dubai, UAE',      lat:25.2048,  lon:55.2708 },
+    la:        {name:'Los Angeles, US', lat:34.0522,  lon:-118.2437},
+    taipei:    {name:'Taipei, TW',      lat:25.0330,  lon:121.5654},
+    cairo:     {name:'Cairo, EG',       lat:30.0444,  lon:31.2357 },
+    capetown:  {name:'Cape Town, ZA',   lat:-33.9249, lon:18.4241 },
+    moscow:    {name:'Moscow, RU',      lat:55.7558,  lon:37.6173 },
+    beijing:   {name:'Beijing, CN',     lat:39.9042,  lon:116.4074},
+    mumbai:    {name:'Mumbai, IN',      lat:19.0760,  lon:72.8777 },
+    singapore: {name:'Singapore, SG',   lat:1.3521,   lon:103.8198}
+  };
+
+  // ── Helpers ──────────────────────────────────────────────
+  function decToDMS(dec){
+    const abs=Math.abs(dec), d=Math.floor(abs), mF=(abs-d)*60, m=Math.floor(mF), s=(mF-m)*60;
+    return {d,m,s};
+  }
+  function dmsToDecSigned(d,m,s,dir){
+    const abs=(parseFloat(d)||0)+(parseFloat(m)||0)/60+(parseFloat(s)||0)/3600;
+    return (dir==='S'||dir==='W') ? -abs : abs;
+  }
+  function fmtDMS(dec,isLat){
+    const abs=Math.abs(dec), d=Math.floor(abs), mF=(abs-d)*60, m=Math.floor(mF), s=((mF-m)*60).toFixed(2);
+    const dir=isLat?(dec>=0?'N':'S'):(dec>=0?'E':'W');
+    return `${d}° ${m}′ ${s}″ ${dir}`;
+  }
+  function fillDMSInputs(prefix,lat,lon){
+    const ld=decToDMS(lat),lnd=decToDMS(lon);
+    document.getElementById(`${prefix}-lat-d`).value=ld.d;
+    document.getElementById(`${prefix}-lat-m`).value=ld.m;
+    document.getElementById(`${prefix}-lat-s`).value=ld.s.toFixed(3);
+    document.getElementById(`${prefix}-lat-dir`).value=lat>=0?'N':'S';
+    document.getElementById(`${prefix}-lon-d`).value=lnd.d;
+    document.getElementById(`${prefix}-lon-m`).value=lnd.m;
+    document.getElementById(`${prefix}-lon-s`).value=lnd.s.toFixed(3);
+    document.getElementById(`${prefix}-lon-dir`).value=lon>=0?'E':'W';
+  }
+  function readDMS(prefix){
+    const lat=dmsToDecSigned(document.getElementById(`${prefix}-lat-d`).value,document.getElementById(`${prefix}-lat-m`).value,document.getElementById(`${prefix}-lat-s`).value,document.getElementById(`${prefix}-lat-dir`).value);
+    const lon=dmsToDecSigned(document.getElementById(`${prefix}-lon-d`).value,document.getElementById(`${prefix}-lon-m`).value,document.getElementById(`${prefix}-lon-s`).value,document.getElementById(`${prefix}-lon-dir`).value);
+    return {lat,lon};
+  }
+  function updatePreview(prefix,lat,lon){
+    const el=document.getElementById(`preview-${prefix}`);
+    const has=document.getElementById(`${prefix}-lat-d`).value!==''||document.getElementById(`${prefix}-lon-d`).value!=='';
+    if(!has||isNaN(lat)||isNaN(lon)){el.innerHTML='輸入度分秒後顯示十進位預覽';return;}
+    el.innerHTML=`十進位換算：<span>${lat.toFixed(6)}°, ${lon.toFixed(6)}°</span>`;
+  }
+
+  function toRad(d){return d*Math.PI/180;}
+  function haversine(lat1,lon1,lat2,lon2,r){
+    r=r||R[unit];
+    const dlat=toRad(lat2-lat1),dlon=toRad(lon2-lon1);
+    const a=Math.sin(dlat/2)**2+Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dlon/2)**2;
+    return r*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+  }
+  function bearing(lat1,lon1,lat2,lon2){
+    const dlon=toRad(lon2-lon1),y=Math.sin(dlon)*Math.cos(toRad(lat2));
+    const x=Math.cos(toRad(lat1))*Math.sin(toRad(lat2))-Math.sin(toRad(lat1))*Math.cos(toRad(lat2))*Math.cos(dlon);
+    return (Math.atan2(y,x)*180/Math.PI+360)%360;
+  }
+  function bearingLabel(b){return['N','NE','E','SE','S','SW','W','NW','N'][Math.round(b/45)];}
+  function bearingLabel16(b){
+    const dirs=['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+    return dirs[Math.round(b/22.5)%16];
+  }
+  function bearingChinese(b){
+    const dirs=['北','北北東','東北','東北東','東','東南東','東南','南南東','南','南南西','西南','西南西','西','西北西','西北','北北西'];
+    return dirs[Math.round(b/22.5)%16];
+  }
+  function drawCompass(bearingDeg){
+    const cv=document.getElementById('compass-canvas');if(!cv)return;
+    const ctx=cv.getContext('2d'),cx=36,cy=36,r=32;
+    ctx.clearRect(0,0,72,72);
+    // outer ring
+    ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);
+    ctx.strokeStyle='rgba(255,184,48,0.25)';ctx.lineWidth=1.5;ctx.stroke();
+    // tick marks
+    for(let i=0;i<8;i++){
+      const a=toRad(i*45-90);
+      const r1=i%2===0?26:28, r2=30;
+      ctx.beginPath();ctx.moveTo(cx+r1*Math.cos(a),cy+r1*Math.sin(a));
+      ctx.lineTo(cx+r2*Math.cos(a),cy+r2*Math.sin(a));
+      ctx.strokeStyle=i%2===0?'rgba(255,184,48,0.5)':'rgba(255,184,48,0.2)';
+      ctx.lineWidth=1;ctx.stroke();
+    }
+    // N label
+    ctx.font='bold 9px DM Mono,monospace';ctx.fillStyle='rgba(255,184,48,0.5)';
+    ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('N',cx,cy-20);
+    // needle — pointing from B toward A (ship direction from dest)
+    const angle=toRad(bearingDeg-90);
+    const nx=cx+22*Math.cos(angle),ny=cy+22*Math.sin(angle);
+    const tx=cx-10*Math.cos(angle),ty=cy-10*Math.sin(angle);
+    // arrow head
+    ctx.beginPath();ctx.moveTo(nx,ny);
+    const perp=toRad(bearingDeg);
+    ctx.lineTo(nx-8*Math.cos(angle)+4*Math.sin(angle),ny-8*Math.sin(angle)-4*Math.cos(angle));
+    ctx.lineTo(nx-8*Math.cos(angle)-4*Math.sin(angle),ny-8*Math.sin(angle)+4*Math.cos(angle));
+    ctx.closePath();ctx.fillStyle='#ffb830';ctx.fill();
+    // shaft
+    ctx.beginPath();ctx.moveTo(nx-7*Math.cos(angle),ny-7*Math.sin(angle));
+    ctx.lineTo(tx,ty);ctx.strokeStyle='rgba(255,184,48,0.7)';ctx.lineWidth=2;ctx.stroke();
+    // center dot
+    ctx.beginPath();ctx.arc(cx,cy,3,0,Math.PI*2);ctx.fillStyle='#ffb830';ctx.fill();
+  }
+
+  function updateRelBearing(lat1,lon1,lat2,lon2){
+    const bar=document.getElementById('rel-bearing-bar');
+    if(isNaN(lat1)||isNaN(lon1)||isNaN(lat2)||isNaN(lon2)){bar.style.display='none';return;}
+    // bearing FROM B (destination) TO A (ship) — i.e. where the ship is relative to destination
+    const bearAtoB=bearing(lat1,lon1,lat2,lon2);         // ship → dest
+    const bearBtoA=bearing(lat2,lon2,lat1,lon1);         // dest → ship (relative position)
+    const lbl16=bearingLabel16(bearBtoA);
+    const lblCN=bearingChinese(bearBtoA);
+    bar.style.display='block';
+    document.getElementById('rel-bearing-text').innerHTML=
+      `🚢 船位於目的地的 <strong>${lblCN} (${lbl16})</strong> 方向 &nbsp;·&nbsp; ${bearBtoA.toFixed(1)}°`;
+    requestAnimationFrame(()=>drawCompass(bearBtoA));
+  }
+  function midpoint(lat1,lon1,lat2,lon2){
+    const phi1=toRad(lat1),phi2=toRad(lat2),lam1=toRad(lon1),dlam=toRad(lon2-lon1);
+    const Bx=Math.cos(phi2)*Math.cos(dlam),By=Math.cos(phi2)*Math.sin(dlam);
+    const phi=Math.atan2(Math.sin(phi1)+Math.sin(phi2),Math.sqrt((Math.cos(phi1)+Bx)**2+By**2));
+    const lam=lam1+Math.atan2(By,Math.cos(phi1)+Bx);
+    return [phi*180/Math.PI,lam*180/Math.PI];
+  }
+  function fmtNum(n){
+    if(n>=10000)return n.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g,',');
+    if(n>=100)return n.toFixed(1);
+    return n.toFixed(2);
+  }
+  function fmtDuration(hours){
+    const totalMins=Math.round(hours*60);
+    const d=Math.floor(totalMins/1440);
+    const h=Math.floor((totalMins%1440)/60);
+    const m=totalMins%60;
+    let s='';
+    if(d>0)s+=`${d}天 `;
+    if(h>0||d>0)s+=`${h}時 `;
+    s+=`${m}分`;
+    return s.trim();
+  }
+  function fmtTime(date){
+    const hh=String(date.getUTCHours()).padStart(2,'0');
+    const mm=String(date.getUTCMinutes()).padStart(2,'0');
+    return `${hh}:${mm}`;
+  }
+  function fmtDate(date,offsetH){
+    const shifted=new Date(date.getTime()+offsetH*3600000);
+    const y=shifted.getUTCFullYear();
+    const mo=String(shifted.getUTCMonth()+1).padStart(2,'0');
+    const d=String(shifted.getUTCDate()).padStart(2,'0');
+    const hh=String(shifted.getUTCHours()).padStart(2,'0');
+    const mm=String(shifted.getUTCMinutes()).padStart(2,'0');
+    return {date:`${y}-${mo}-${d}`, time:`${hh}:${mm}`};
+  }
+
+  // ── Controls ─────────────────────────────────────────────
+  function setMode(mode){
+    coordMode=mode;
+    document.getElementById('mode-dec').classList.toggle('active',mode==='decimal');
+    document.getElementById('mode-dms').classList.toggle('active',mode==='dms');
+    ['dec-a','dec-b'].forEach(id=>document.getElementById(id).style.display=mode==='decimal'?'':'none');
+    ['dms-a','dms-b'].forEach(id=>document.getElementById(id).style.display=mode==='dms'?'':'none');
+    if(mode==='dms'){
+      const lat1=parseFloat(document.getElementById('lat1').value),lon1=parseFloat(document.getElementById('lon1').value);
+      const lat2=parseFloat(document.getElementById('lat2').value),lon2=parseFloat(document.getElementById('lon2').value);
+      if(!isNaN(lat1)&&!isNaN(lon1))fillDMSInputs('a',lat1,lon1);
+      if(!isNaN(lat2)&&!isNaN(lon2))fillDMSInputs('b',lat2,lon2);
+      dmsCalc();
+    } else {
+      const a=readDMS('a'),b=readDMS('b');
+      if(!isNaN(a.lat)){document.getElementById('lat1').value=a.lat.toFixed(6);document.getElementById('lon1').value=a.lon.toFixed(6);}
+      if(!isNaN(b.lat)){document.getElementById('lat2').value=b.lat.toFixed(6);document.getElementById('lon2').value=b.lon.toFixed(6);}
+      calc();
+    }
+  }
+
+  function dmsCalc(){
+    const a=readDMS('a'),b=readDMS('b');
+    updatePreview('a',a.lat,a.lon); updatePreview('b',b.lat,b.lon);
+    document.getElementById('lat1').value=a.lat; document.getElementById('lon1').value=a.lon;
+    document.getElementById('lat2').value=b.lat; document.getElementById('lon2').value=b.lon;
+    calc();
+  }
+
+  function setUnit(u){
+    unit=u;
+    ['km','mi','nm'].forEach(k=>document.getElementById('u-'+k).classList.toggle('active',k===u));
+    calc();
+  }
+
+  function applySpeedPreset(){
+    const v=document.getElementById('speed-preset').value;
+    if(v){document.getElementById('vessel-speed').value=v; calc();}
+  }
+
+  function setNow(){
+    const now=new Date();
+    document.getElementById('depart-date').value=now.toISOString().slice(0,10);
+    document.getElementById('depart-time').value=now.toISOString().slice(11,16);
+    calc();
+  }
+
+  function loadPreset(a,b){
+    const pa=presets[a],pb=presets[b];
+    document.getElementById('tag-a').textContent=pa.name;
+    document.getElementById('tag-b').textContent=pb.name;
+    document.getElementById('lat1').value=pa.lat; document.getElementById('lon1').value=pa.lon;
+    document.getElementById('lat2').value=pb.lat; document.getElementById('lon2').value=pb.lon;
+    if(coordMode==='dms'){fillDMSInputs('a',pa.lat,pa.lon);fillDMSInputs('b',pb.lat,pb.lon);dmsCalc();}
+    else calc();
+  }
+
+  function swapPoints(){
+    if(coordMode==='dms'){
+      const a=readDMS('a'),b=readDMS('b');
+      fillDMSInputs('a',b.lat,b.lon);fillDMSInputs('b',a.lat,a.lon);dmsCalc();
+    } else {
+      const v1=document.getElementById('lat1').value,v2=document.getElementById('lon1').value;
+      const v3=document.getElementById('lat2').value,v4=document.getElementById('lon2').value;
+      document.getElementById('lat1').value=v3;document.getElementById('lon1').value=v4;
+      document.getElementById('lat2').value=v1;document.getElementById('lon2').value=v2;
+      calc();
+    }
+    const ta=document.getElementById('tag-a').textContent,tb=document.getElementById('tag-b').textContent;
+    document.getElementById('tag-a').textContent=tb;document.getElementById('tag-b').textContent=ta;
+  }
+
+  // ── Map ───────────────────────────────────────────────────
+  function drawMap(lat1,lon1,lat2,lon2){
+    const canvas=document.getElementById('map');if(!canvas)return;
+    const W=canvas.offsetWidth,H=200;canvas.width=W;canvas.height=H;
+    const ctx=canvas.getContext('2d');
+    ctx.fillStyle='#0a0d13';ctx.fillRect(0,0,W,H);
+    function proj(lat,lon){return[((lon+180)/360)*W,((90-lat)/180)*H];}
+    ctx.strokeStyle='rgba(255,255,255,0.04)';ctx.lineWidth=1;
+    for(let l=-180;l<=180;l+=30){const[x]=proj(0,l);ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+    for(let l=-90;l<=90;l+=30){const[,y]=proj(l,0);ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+    const[,ey]=proj(0,0);ctx.strokeStyle='rgba(255,255,255,0.08)';ctx.beginPath();ctx.moveTo(0,ey);ctx.lineTo(W,ey);ctx.stroke();
+    const[x1,y1]=proj(lat1,lon1),[x2,y2]=proj(lat2,lon2),steps=80;
+    function drawPath(c,lw,dash){ctx.strokeStyle=c;ctx.lineWidth=lw;ctx.setLineDash(dash||[]);ctx.beginPath();for(let i=0;i<=steps;i++){const t=i/steps,lt=lat1+(lat2-lat1)*t,ln=lon1+(lon2-lon1)*t;const[px,py]=proj(lt,ln);i===0?ctx.moveTo(px,py):ctx.lineTo(px,py);}ctx.stroke();ctx.setLineDash([]);}
+    drawPath('rgba(0,196,212,0.12)',8,[5,4]);
+    drawPath('rgba(0,196,212,0.6)',1.5,[5,4]);
+    [[x1,y1,'#4fa8ff','#0077ff','A','🚢'],[x2,y2,'#ffb830','#cc8800','B','⚓']].forEach(([x,y,f,r,l,icon],i)=>{
+      ctx.beginPath();ctx.arc(x,y,13,0,Math.PI*2);ctx.fillStyle='rgba(0,0,0,0.7)';ctx.fill();
+      ctx.strokeStyle=r;ctx.lineWidth=1.5;ctx.stroke();
+      ctx.font='12px serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(icon,x,y);
+      ctx.fillStyle=f;ctx.font='bold 9px DM Mono,monospace';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(l,x,y-19);
+    });
+    const[mlat,mlon]=midpoint(lat1,lon1,lat2,lon2);
+    const[mx,my]=proj(mlat,mlon);
+    const dist=haversine(lat1,lon1,lat2,lon2);
+    const dLabel=fmtNum(dist)+' '+unitLabel[unit];
+    ctx.font='500 11px DM Mono,monospace';
+    const tw=ctx.measureText(dLabel).width;
+    ctx.fillStyle='rgba(10,13,19,0.9)';ctx.beginPath();ctx.roundRect(mx-tw/2-8,my-12,tw+16,24,4);ctx.fill();
+    ctx.strokeStyle='rgba(0,196,212,0.5)';ctx.lineWidth=1;ctx.stroke();
+    ctx.fillStyle='#00c4d4';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(dLabel,mx,my);
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // ── Taiwan Landmass Routing Logic ───────────────────────────
+  // ═══════════════════════════════════════════════════════════
+
+  // Simplified Taiwan main island outline polygon (WGS-84, ~50 points, clockwise)
+  const TAIWAN_POLY = [
+    [25.2975, 121.5374], // 富貴角 (northernmost)
+    [25.1300, 121.7600], // 基隆外海
+    [25.0083, 122.0078], // T1 三貂角
+    [24.8395, 121.9647], // T22 龜頭岸
+    [24.5994, 121.9031], // T21 米島
+    [24.4805, 121.8621], // T20 烏石鼻
+    [24.2800, 121.8300], // 花蓮外海
+    [23.9761, 121.6256], // 花蓮港
+    [23.4833, 121.5166], // T19 石梯鼻
+    [23.1200, 121.4000], // 成功外海
+    [22.9300, 121.3800], // 台東外海
+    [22.6854, 121.5225], // T18 飛岩
+    [22.3100, 120.9000], // 大武外海
+    [21.9000, 120.8600], // 鵝鑾鼻附近
+    [21.7563, 120.8264], // T15 七星岩 (southernmost tip area)
+    [21.9564, 121.6175], // T17 小蘭嶼2 (skip — offshore)
+    [22.0000, 120.7000], // 恆春半島西側
+    [22.3200, 120.3800], // 枋山
+    [22.5990, 120.2884], // 高雄港
+    [23.0700, 120.1500], // 台南外海
+    [23.5000, 120.0800], // 嘉義外海 (westernmost area)
+    [24.0000, 120.1500], // 台中外海
+    [24.3500, 120.3000], // 苗栗外海
+    [24.6500, 120.5000], // 新竹外海
+    [25.0320, 121.0329], // T7 大潭
+    [25.0682, 121.0982], // T6 大崛溪
+    [25.1700, 121.3500], // 淡水外海
+    [25.2975, 121.5374], // 富貴角 (close polygon)
+  ];
+
+  // Simplified outlines for major offshore islands
+  const PENGHU_POLY = [
+    [23.7500, 119.6500],[23.6000, 119.4500],[23.3500, 119.4000],
+    [23.2500, 119.5000],[23.3000, 119.7000],[23.6000, 119.7500],[23.7500, 119.6500]
+  ];
+  const LANYU_POLY = [
+    [22.1200, 121.4800],[22.0200, 121.4500],[21.9400, 121.5500],
+    [22.0000, 121.6500],[22.1000, 121.6000],[22.1200, 121.4800]
+  ];
+  const GREEN_POLY = [
+    [33.2600, 121.4900],[33.1800, 121.4600],[33.1200, 121.5100],
+    [33.1500, 121.5700],[33.2200, 121.5500],[33.2600, 121.4900]
+  ]; // placeholder (Green Island ~33°N is wrong — fix below)
+  const LYUDAO_POLY = [ // 綠島 Green Island
+    [22.6800, 121.4600],[22.6300, 121.4400],[22.6000, 121.4900],
+    [22.6200, 121.5300],[22.6700, 121.5200],[22.6800, 121.4600]
+  ];
+  const XIAOLIUQIU_POLY = [ // 小琉球
+    [22.3500, 120.3900],[22.3200, 120.3600],[22.3000, 120.3900],
+    [22.3200, 120.4200],[22.3500, 120.4100],[22.3500, 120.3900]
+  ];
+
+  const ALL_LAND_POLYS = [
+    {name:'台灣本島', poly:TAIWAN_POLY, waypoints:{
+      north: {lat:25.3500, lon:121.9000, label:'北端繞行 (三貂角外)'},  // NE cape
+      south: {lat:21.6500, lon:120.8800, label:'南端繞行 (鵝鑾鼻外)'}   // S cape
+    }},
+    {name:'澎湖群島', poly:PENGHU_POLY, waypoints:{
+      north: {lat:23.8200, lon:119.5500, label:'澎湖北側繞行'},
+      south: {lat:23.1500, lon:119.5000, label:'澎湖南側繞行'}
+    }},
+    {name:'蘭嶼',    poly:LANYU_POLY,  waypoints:{
+      north: {lat:22.1800, lon:121.5500, label:'蘭嶼北側繞行'},
+      south: {lat:21.9000, lon:121.5500, label:'蘭嶼南側繞行'}
+    }},
+    {name:'綠島',    poly:LYUDAO_POLY, waypoints:{
+      north: {lat:22.7200, lon:121.4800, label:'綠島北側繞行'},
+      south: {lat:22.5800, lon:121.4800, label:'綠島南側繞行'}
+    }},
+    {name:'小琉球',  poly:XIAOLIUQIU_POLY, waypoints:{
+      north: {lat:22.3700, lon:120.4000, label:'小琉球北側繞行'},
+      south: {lat:22.2800, lon:120.4000, label:'小琉球南側繞行'}
+    }},
+  ];
+
+  // Ray-casting point-in-polygon test
+  function pointInPoly(lat, lon, poly) {
+    let inside = false;
+    for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+      const xi = poly[i][1], yi = poly[i][0];
+      const xj = poly[j][1], yj = poly[j][0];
+      const intersect = ((yi > lat) !== (yj > lat)) &&
+        (lon < (xj - xi) * (lat - yi) / (yj - yi) + xi);
+      if (intersect) inside = !inside;
+    }
+    return inside;
+  }
+
+  // Line segment intersection test (lat/lon as y/x)
+  function segmentsIntersect(a1, b1, a2, b2) {
+    // a1=[lat,lon], b1, a2, b2
+    const p0x=a1[1],p0y=a1[0], p1x=b1[1],p1y=b1[0];
+    const p2x=a2[1],p2y=a2[0], p3x=b2[1],p3y=b2[0];
+    const s1x=p1x-p0x, s1y=p1y-p0y, s2x=p3x-p2x, s2y=p3y-p2y;
+    const denom = s1x*s2y - s2x*s1y;
+    if (Math.abs(denom) < 1e-10) return false;
+    const s = (-s1y*(p0x-p2x) + s1x*(p0y-p2y)) / denom;
+    const t = ( s2x*(p0y-p2y) - s2y*(p0x-p2x)) / denom;
+    return s>=0 && s<=1 && t>=0 && t<=1;
+  }
+
+  // Does the straight line from A to B cross this polygon?
+  function lineCrossesPoly(lat1, lon1, lat2, lon2, poly) {
+    const A=[lat1,lon1], B=[lat2,lon2];
+    for (let i=0; i<poly.length-1; i++) {
+      if (segmentsIntersect(A, B, poly[i], poly[i+1])) return true;
+    }
+    // Also check last→first edge
+    if (segmentsIntersect(A, B, poly[poly.length-1], poly[0])) return true;
+    // Or if either endpoint is inside polygon
+    if (pointInPoly(lat1,lon1,poly) || pointInPoly(lat2,lon2,poly)) return true;
+    return false;
+  }
+
+  // Find which land bodies block the route and return best waypoint detour
+  function checkRouteObstructions(lat1, lon1, lat2, lon2) {
+    const blocked = [];
+    for (const land of ALL_LAND_POLYS) {
+      if (lineCrossesPoly(lat1,lon1,lat2,lon2,land.poly)) {
+        // Pick north or south waypoint — whichever gives shorter total route
+        const wp = land.waypoints;
+        const distN = haversine(lat1,lon1,wp.north.lat,wp.north.lon,3440.065)
+                    + haversine(wp.north.lat,wp.north.lon,lat2,lon2,3440.065);
+        const distS = haversine(lat1,lon1,wp.south.lat,wp.south.lon,3440.065)
+                    + haversine(wp.south.lat,wp.south.lon,lat2,lon2,3440.065);
+        const chosen = distN <= distS ? wp.north : wp.south;
+        const chosenDist = Math.min(distN, distS);
+        blocked.push({ landName: land.name, waypoint: chosen, totalNM: chosenDist });
+      }
+    }
+    return blocked; // empty = clear route
+  }
+
+  // ── Updated drawMap — supports waypoint path ─────────────────
+  function drawMap(lat1,lon1,lat2,lon2,waypoints){
+    const canvas=document.getElementById('map');if(!canvas)return;
+    const W=canvas.offsetWidth,H=200;canvas.width=W;canvas.height=H;
+    const ctx=canvas.getContext('2d');
+    ctx.fillStyle='#0a0d13';ctx.fillRect(0,0,W,H);
+    function proj(lat,lon){return[((lon+180)/360)*W,((90-lat)/180)*H];}
+    // Grid
+    ctx.strokeStyle='rgba(255,255,255,0.04)';ctx.lineWidth=1;
+    for(let l=-180;l<=180;l+=30){const[x]=proj(0,l);ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+    for(let l=-90;l<=90;l+=30){const[,y]=proj(l,0);ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+    const[,ey]=proj(0,0);ctx.strokeStyle='rgba(255,255,255,0.08)';ctx.beginPath();ctx.moveTo(0,ey);ctx.lineTo(W,ey);ctx.stroke();
+
+    const[x1,y1]=proj(lat1,lon1),[x2,y2]=proj(lat2,lon2);
+
+    if(waypoints && waypoints.length>0){
+      // Draw original straight line as faded red (blocked)
+      ctx.strokeStyle='rgba(255,82,82,0.25)';ctx.lineWidth=1.5;ctx.setLineDash([3,5]);
+      ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();ctx.setLineDash([]);
+
+      // Draw waypoint detour path in amber
+      const pts=[[lat1,lon1],...waypoints.map(w=>[w.waypoint.lat,w.waypoint.lon]),[lat2,lon2]];
+      for(let s=0;s<pts.length-1;s++){
+        const[ax,ay]=proj(pts[s][0],pts[s][1]);
+        const[bx,by]=proj(pts[s+1][0],pts[s+1][1]);
+        ctx.strokeStyle='rgba(255,184,48,0.18)';ctx.lineWidth=7;ctx.setLineDash([]);
+        ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(bx,by);ctx.stroke();
+        ctx.strokeStyle='rgba(255,184,48,0.85)';ctx.lineWidth=2;ctx.setLineDash([6,3]);
+        ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(bx,by);ctx.stroke();
+        ctx.setLineDash([]);
+      }
+      // Draw waypoint markers
+      waypoints.forEach((w,i)=>{
+        const[wx,wy]=proj(w.waypoint.lat,w.waypoint.lon);
+        ctx.beginPath();ctx.arc(wx,wy,7,0,Math.PI*2);
+        ctx.fillStyle='rgba(255,184,48,0.15)';ctx.fill();
+        ctx.strokeStyle='#ffb830';ctx.lineWidth=1.5;ctx.stroke();
+        ctx.font='bold 8px DM Mono,monospace';ctx.fillStyle='#ffb830';
+        ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('W'+(i+1),wx,wy);
+      });
+    } else {
+      // Normal teal path
+      ctx.strokeStyle='rgba(0,196,212,0.12)';ctx.lineWidth=8;ctx.setLineDash([5,4]);
+      ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();ctx.setLineDash([]);
+      ctx.strokeStyle='rgba(0,196,212,0.6)';ctx.lineWidth=1.5;ctx.setLineDash([5,4]);
+      ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();ctx.setLineDash([]);
+    }
+
+    // A/B markers
+    [[x1,y1,'#4fa8ff','#0077ff','A','🚢'],[x2,y2,'#ffb830','#cc8800','B','⚓']].forEach(([x,y,f,r,l,icon])=>{
+      ctx.beginPath();ctx.arc(x,y,13,0,Math.PI*2);ctx.fillStyle='rgba(0,0,0,0.7)';ctx.fill();
+      ctx.strokeStyle=r;ctx.lineWidth=1.5;ctx.stroke();
+      ctx.font='12px serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(icon,x,y);
+      ctx.fillStyle=f;ctx.font='bold 9px DM Mono,monospace';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(l,x,y-19);
+    });
+
+    // Distance label at midpoint
+    const[mlat2,mlon2]=midpoint(lat1,lon1,lat2,lon2);
+    const[mx,my]=proj(mlat2,mlon2);
+    const dist=haversine(lat1,lon1,lat2,lon2);
+    const dLabel=fmtNum(dist)+' '+unitLabel[unit];
+    ctx.font='500 11px DM Mono,monospace';
+    const tw=ctx.measureText(dLabel).width;
+    ctx.fillStyle='rgba(10,13,19,0.9)';ctx.beginPath();ctx.roundRect(mx-tw/2-8,my-12,tw+16,24,4);ctx.fill();
+    ctx.strokeStyle= (waypoints&&waypoints.length>0)?'rgba(255,82,82,0.4)':'rgba(0,196,212,0.5)';
+    ctx.lineWidth=1;ctx.stroke();
+    ctx.fillStyle=(waypoints&&waypoints.length>0)?'#ff5252':'#00c4d4';
+    ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(dLabel,mx,my);
+  }
+  // ── Main calc ─────────────────────────────────────────────
+  function calc(){
+    const lat1=parseFloat(document.getElementById('lat1').value);
+    const lon1=parseFloat(document.getElementById('lon1').value);
+    const lat2=parseFloat(document.getElementById('lat2').value);
+    const lon2=parseFloat(document.getElementById('lon2').value);
+    const area=document.getElementById('result-area');
+
+    if([lat1,lon1,lat2,lon2].some(isNaN)){
+      area.innerHTML='<div class="empty-state">填入起點與終點座標，設定船速後開始計算</div>';
+      document.getElementById('rel-bearing-bar').style.display='none';
+      return;
+    }
+    if(Math.abs(lat1)>90||Math.abs(lat2)>90){area.innerHTML='<p class="error-msg">⚠ 緯度必須介於 −90 到 90 之間。</p>';return;}
+    if(Math.abs(lon1)>180||Math.abs(lon2)>180){area.innerHTML='<p class="error-msg">⚠ 經度必須介於 −180 到 180 之間。</p>';return;}
+
+    // ── Land obstruction check
+    const obstructions=checkRouteObstructions(lat1,lon1,lat2,lon2);
+    const isBlocked=obstructions.length>0;
+
+    const directNM=haversine(lat1,lon1,lat2,lon2,3440.065);
+    const directKM=haversine(lat1,lon1,lat2,lon2,6371);
+    const bear=bearing(lat1,lon1,lat2,lon2);
+    const[mlat,mlon]=midpoint(lat1,lon1,lat2,lon2);
+
+    // Compute routed distance via waypoints
+    let routeNM=directNM, routeKM=directKM, waypointList=[];
+    if(isBlocked){
+      waypointList=obstructions;
+      const pts=[[lat1,lon1],...obstructions.map(o=>[o.waypoint.lat,o.waypoint.lon]),[lat2,lon2]];
+      routeNM=0; routeKM=0;
+      for(let i=0;i<pts.length-1;i++){
+        routeNM+=haversine(pts[i][0],pts[i][1],pts[i+1][0],pts[i+1][1],3440.065);
+        routeKM+=haversine(pts[i][0],pts[i][1],pts[i+1][0],pts[i+1][1],6371);
+      }
+    }
+
+    const displayDist=unit==='km'?routeKM:unit==='mi'?routeKM*0.621371:routeNM;
+    const directDisp =unit==='km'?directKM:unit==='mi'?directKM*0.621371:directNM;
+
+    updateRelBearing(lat1,lon1,lat2,lon2);
+
+    // ── Obstruction card HTML
+    let obstructionHTML='';
+    if(isBlocked){
+      const wpRows=obstructions.map((o,i)=>`
+        <div class="waypoint-row">
+          <span class="wp-num">W${i+1}</span>
+          <span class="wp-label">${o.waypoint.label}</span>
+          <span class="wp-coord">${fmtDMS(o.waypoint.lat,true)} / ${fmtDMS(o.waypoint.lon,false)}</span>
+        </div>`).join('');
+      obstructionHTML=`
+        <div class="obstruction-card">
+          <div class="obs-header">
+            <span class="obs-icon">⚠️</span>
+            <div>
+              <div class="obs-title">直線航路穿越陸地 Route crosses land</div>
+              <div class="obs-sub">偵測到障礙：${obstructions.map(o=>o.landName).join('、')}</div>
+            </div>
+          </div>
+          <div class="obs-compare">
+            <div class="obs-dist-block">
+              <div class="obs-dist-label">⚠ 直線距離（不可行）</div>
+              <div class="obs-dist-val red">${fmtNum(directDisp)} ${unitLabel[unit]}</div>
+            </div>
+            <div class="obs-arrow">→</div>
+            <div class="obs-dist-block">
+              <div class="obs-dist-label">✅ 繞行距離（建議採用）</div>
+              <div class="obs-dist-val amber">${fmtNum(displayDist)} ${unitLabel[unit]}</div>
+            </div>
+          </div>
+          <div class="obs-waypoints-label">繞行中繼點 Waypoints</div>
+          ${wpRows}
+        </div>`;
+    }
+
+    // ── ETA calculation (use routeNM)
+    const speed=parseFloat(document.getElementById('vessel-speed').value);
+    const efficiency=parseFloat(document.getElementById('efficiency').value)||1.15;
+    const departDate=document.getElementById('depart-date').value;
+    const departTime=document.getElementById('depart-time').value;
+
+    let etaHTML='';
+    if(!isNaN(speed)&&speed>0){
+      const actualNM=routeNM*efficiency;
+      const voyageHours=actualNM/speed;
+      const voyageDays=Math.floor(voyageHours/24);
+      const voyageHoursRem=Math.floor(voyageHours%24);
+      const voyageMinsRem=Math.round((voyageHours*60)%60);
+      let utcStr=null,twStr=null;
+      if(departDate&&departTime){
+        const etaUTC=new Date(new Date(`${departDate}T${departTime}:00Z`).getTime()+voyageHours*3600*1000);
+        utcStr=fmtDate(etaUTC,0); twStr=fmtDate(etaUTC,8);
+      }
+      etaHTML=`
+        <div class="eta-card">
+          <div class="eta-header"><span class="eta-icon">🕐</span><span class="eta-title">預計到達時間 ETA${isBlocked?' · 繞行距離':''}</span></div>
+          ${utcStr?`<div class="eta-grid">
+            <div class="eta-block"><div class="eta-tz-label"><span class="tz-dot tz-dot-utc"></span>UTC 世界協調時</div><div class="eta-time">${utcStr.time}</div><div class="eta-date">${utcStr.date}</div></div>
+            <div class="eta-block"><div class="eta-tz-label"><span class="tz-dot tz-dot-tw"></span>台灣時間 UTC+8</div><div class="eta-time">${twStr.time}</div><div class="eta-date">${twStr.date}</div></div>
+          </div>`:`<div style="font-size:12px;color:var(--muted);margin-bottom:14px;padding:10px;background:rgba(0,196,212,0.04);border:1px solid rgba(0,196,212,0.1);border-radius:5px;">💡 填入出發時間以顯示具體 ETA 日期時間</div>`}
+          <div class="eta-stats">
+            <div class="eta-stat"><div class="eta-stat-label">航行時間 Voyage</div><div class="eta-stat-value">${voyageDays>0?voyageDays+'d ':''} ${voyageHoursRem}h ${voyageMinsRem}m</div></div>
+            <div class="eta-stat"><div class="eta-stat-label">有效距離 Effective</div><div class="eta-stat-value">${fmtNum(actualNM)} NM</div></div>
+            <div class="eta-stat"><div class="eta-stat-label">船速 Speed</div><div class="eta-stat-value">${speed} kn</div></div>
+          </div>
+        </div>`;
+    } else {
+      etaHTML=`<div class="eta-card" style="opacity:0.5;"><div class="eta-header"><span class="eta-icon">🕐</span><span class="eta-title">預計到達時間 ETA</span></div><div style="font-size:12px;color:var(--muted);padding:8px 0;">在上方填入船速後即可計算 ETA</div></div>`;
+    }
+
+    area.innerHTML=`
+      <div class="result-main-card" style="${isBlocked?'border-color:rgba(255,82,82,0.3);':''}">
+        <div class="result-distance-label">${isBlocked?'繞行航線距離 Routed distance':'大圓距離 Great-circle distance'}</div>
+        <div class="result-distance">
+          <span class="result-number" style="${isBlocked?'color:var(--amber);':''}">${fmtNum(displayDist)}</span>
+          <span class="result-unit-label">${unitLabel[unit]}</span>
+        </div>
+        <div class="result-formula">${isBlocked?`自動繞行計算 · 直線距離 ${fmtNum(directDisp)} ${unitLabel[unit]}（穿越陸地，不適用）`:'Haversine formula · spherical Earth (R = 6,371 km)'}</div>
+      </div>
+      ${obstructionHTML}
+      <div class="stat-grid">
+        <div class="stat-card"><div class="stat-label">海里 Nautical</div><div class="stat-value teal">${fmtNum(routeNM)} NM</div></div>
+        <div class="stat-card"><div class="stat-label">公里 Kilometers</div><div class="stat-value">${fmtNum(routeKM)} km</div></div>
+        <div class="stat-card"><div class="stat-label">英里 Miles</div><div class="stat-value">${fmtNum(routeKM*0.621371)} mi</div></div>
+        <div class="stat-card"><div class="stat-label">方位角 Bearing</div><div class="stat-value">${bear.toFixed(2)}° ${bearingLabel(bear)}</div></div>
+        <div class="stat-card"><div class="stat-label">中點緯度 Mid Lat</div><div class="stat-value">${fmtDMS(mlat,true)}</div></div>
+        <div class="stat-card"><div class="stat-label">中點經度 Mid Lon</div><div class="stat-value">${fmtDMS(mlon,false)}</div></div>
+      </div>
+      ${etaHTML}
+      <div class="map-wrap">
+        <div class="map-header">
+          <span>🗺 航線預覽 Route preview</span>
+          <span style="color:${isBlocked?'#ff5252':'#6b7391'};">${isBlocked?'⚠ 自動繞行路線':'great-circle path 大圓航線'}</span>
+        </div>
+        <canvas id="map"></canvas>
+      </div>`;
+
+    requestAnimationFrame(()=>drawMap(lat1,lon1,lat2,lon2,isBlocked?waypointList:null));
+  }
+
+
+  // Init: set today's date
+  const now=new Date();
+  document.getElementById('depart-date').value=now.toISOString().slice(0,10);
+  document.getElementById('depart-time').value=now.toISOString().slice(11,16);
+
+  loadPreset('taipei','singapore');
+</script>
+</body>
+</html>
+  .app { position:relative; z-index:1; max-width:840px; margin:0 auto; padding:2rem 1.5rem 4rem; }
+
+  /* ── Header ── */
+  header { display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:2.5rem; padding-bottom:1.5rem; border-bottom:1px solid var(--border); flex-wrap:wrap; gap:10px; }
+  .logo { font-family:var(--font-head); font-size:28px; font-weight:800; letter-spacing:-0.5px; color:var(--text); }
+  .logo span { color:var(--accent); }
+  .logo-sub { font-size:11px; color:var(--muted); letter-spacing:0.12em; text-transform:uppercase; margin-top:2px; }
+  .header-right { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .version { font-size:11px; color:var(--muted); letter-spacing:0.12em; text-transform:uppercase; padding:4px 10px; border:1px solid var(--border2); border-radius:20px; }
+  .offline-badge { display:flex; align-items:center; gap:6px; padding:4px 10px; border:1px solid rgba(0,229,160,0.3); border-radius:20px; font-size:10px; color:var(--accent); letter-spacing:0.1em; text-transform:uppercase; }
+  .offline-dot { width:6px; height:6px; border-radius:50%; background:var(--accent); animation:pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  /* ── Labels ── */
+  .label { font-size:10px; letter-spacing:0.15em; text-transform:uppercase; color:var(--muted); margin-bottom:10px; display:flex; align-items:center; gap:8px; }
+  .label::after { content:''; flex:1; height:1px; background:var(--border); }
+
+  /* ── Presets ── */
+  .presets { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:1.5rem; }
+  .preset { font-family:var(--font-mono); font-size:11px; padding:5px 12px; border:1px solid var(--border2); border-radius:3px; background:var(--surface); color:var(--muted2); cursor:pointer; transition:all 0.15s; }
+  .preset:hover { border-color:var(--accent); color:var(--accent); background:rgba(0,229,160,0.05); }
+
+  /* ── Destination preset dropdown ── */
+  .dest-preset-row { margin-bottom:1.25rem; }
+  .dest-preset-row select {
+    font-family:var(--font-mono); font-size:13px; color:var(--text);
+    background:var(--surface); border:1px solid var(--border2);
+    border-radius:6px; padding:9px 14px; outline:none; cursor:pointer;
+    width:100%; transition:border-color 0.15s; appearance:none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7391' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 12px center;
+    padding-right:36px; color-scheme:dark;
+  }
+  .dest-preset-row select:focus { border-color:var(--amber); }
+  .dest-preset-row select option { background:var(--surface2); color:var(--text); }
+  .dest-preset-row select optgroup { color:var(--muted); font-style:normal; }
+
+  /* ── Relative bearing card ── */
+  .rel-bearing-card {
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    background:var(--surface); border:1px solid rgba(255,184,48,0.2);
+    border-radius:8px; padding:12px 16px; margin-bottom:1.25rem;
+  }
+  .rel-bearing-left { flex:1; min-width:0; }
+  .rel-bearing-label { font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); margin-bottom:5px; }
+  .rel-bearing-value { font-family:var(--font-head); font-size:16px; font-weight:700; color:var(--amber); line-height:1.3; }
+  .rel-bearing-sub { font-size:11px; color:var(--muted2); margin-top:3px; font-family:var(--font-mono); }
+  .rel-compass { flex-shrink:0; }
+
+  /* ── Mode toggle ── */
+  .mode-row { display:flex; align-items:center; gap:10px; margin-bottom:1.25rem; flex-wrap:wrap; }
+  .mode-label { font-size:11px; color:var(--muted); letter-spacing:0.08em; text-transform:uppercase; }
+  .mode-toggle { display:flex; background:var(--surface2); border:1px solid var(--border); border-radius:6px; overflow:hidden; }
+  .mode-btn { font-family:var(--font-mono); font-size:11px; padding:7px 16px; background:transparent; border:none; color:var(--muted2); cursor:pointer; transition:all 0.15s; white-space:nowrap; }
+  .mode-btn.active { background:rgba(0,229,160,0.12); color:var(--accent); }
+
+  /* ── Point cards ── */
+  .point-card { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:1.25rem; margin-bottom:8px; position:relative; overflow:hidden; transition:border-color 0.2s; }
+  .point-card:focus-within { border-color:var(--border2); }
+  .point-card::before { content:''; position:absolute; top:0; left:0; width:3px; height:100%; border-radius:8px 0 0 8px; }
+  .card-a::before { background:var(--accent2); }
+  .card-b::before { background:var(--amber); }
+
+  .point-header { display:flex; align-items:center; gap:10px; margin-bottom:14px; flex-wrap:wrap; }
+  .badge { width:26px; height:26px; border-radius:4px; display:flex; align-items:center; justify-content:center; font-family:var(--font-head); font-size:13px; font-weight:700; flex-shrink:0; }
+  .badge-a { background:rgba(0,119,255,0.15); color:#4fa8ff; }
+  .badge-b { background:rgba(255,184,48,0.15); color:var(--amber); }
+  .point-name { font-family:var(--font-head); font-size:13px; font-weight:500; color:var(--muted2); letter-spacing:0.05em; text-transform:uppercase; }
+  .ship-badge { display:flex; align-items:center; gap:5px; font-size:11px; color:var(--teal); background:rgba(0,196,212,0.08); border:1px solid rgba(0,196,212,0.25); border-radius:20px; padding:3px 10px; }
+  .city-tag { margin-left:auto; font-size:11px; color:var(--muted); }
+
+  /* ── Inputs ── */
+  .input-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .field { display:flex; flex-direction:column; gap:5px; }
+  .field label { font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); }
+  .field input, .field select {
+    font-family:var(--font-mono); font-size:15px; font-weight:500; color:var(--text);
+    background:var(--surface2); border:1px solid var(--border); border-radius:5px;
+    padding:10px 12px; outline:none; transition:border-color 0.15s; width:100%;
+  }
+  .field input::placeholder { color:var(--muted); font-weight:400; font-size:13px; }
+  .field input:focus, .field select:focus { border-color:var(--accent); }
+
+  /* ── Vessel speed card ── */
+  .vessel-card {
+    background:var(--surface); border:1px solid rgba(0,196,212,0.2);
+    border-radius:8px; padding:1.25rem; margin-bottom:8px;
+    position:relative; overflow:hidden;
+  }
+  .vessel-card::before { content:''; position:absolute; top:0; left:0; width:3px; height:100%; border-radius:8px 0 0 8px; background:var(--teal); }
+
+  .vessel-header { display:flex; align-items:center; gap:10px; margin-bottom:16px; }
+  .vessel-icon { font-size:22px; }
+  .vessel-title { font-family:var(--font-head); font-size:14px; font-weight:600; color:var(--teal); letter-spacing:0.04em; text-transform:uppercase; }
+  .vessel-sub { font-size:11px; color:var(--muted); margin-top:1px; }
+
+  .speed-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; align-items:end; }
+
+  .speed-input-wrap { position:relative; }
+  .speed-input-wrap input {
+    font-family:var(--font-mono); font-size:22px; font-weight:500; color:var(--teal);
+    background:var(--surface2); border:1px solid rgba(0,196,212,0.2); border-radius:5px;
+    padding:10px 52px 10px 12px; outline:none; transition:border-color 0.15s; width:100%;
+  }
+  .speed-input-wrap input:focus { border-color:var(--teal); }
+  .speed-input-wrap input::placeholder { color:var(--muted); font-size:16px; }
+  .speed-unit-tag { position:absolute; right:10px; top:50%; transform:translateY(-50%); font-size:12px; color:var(--teal); opacity:0.7; pointer-events:none; }
+
+  /* Departure datetime */
+  .depart-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px; }
+  .depart-field { display:flex; flex-direction:column; gap:5px; }
+  .depart-field label { font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); }
+  .depart-field input {
+    font-family:var(--font-mono); font-size:13px; font-weight:500; color:var(--text);
+    background:var(--surface2); border:1px solid var(--border); border-radius:5px;
+    padding:9px 12px; outline:none; transition:border-color 0.15s; width:100%;
+    color-scheme: dark;
+  }
+  .depart-field input:focus { border-color:var(--teal); }
+
+  .now-btn {
+    font-family:var(--font-mono); font-size:11px; padding:5px 12px;
+    border:1px solid rgba(0,196,212,0.3); border-radius:4px;
+    background:rgba(0,196,212,0.06); color:var(--teal);
+    cursor:pointer; transition:all 0.15s; align-self:flex-end; white-space:nowrap;
+  }
+  .now-btn:hover { background:rgba(0,196,212,0.12); border-color:var(--teal); }
+
+  /* ── DMS inputs ── */
+  .dms-group { display:flex; flex-direction:column; gap:12px; }
+  .dms-coord-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .dms-coord-block { display:flex; flex-direction:column; gap:6px; }
+  .dms-coord-label { font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); margin-bottom:2px; }
+  .dms-triple { display:grid; grid-template-columns:1fr 1fr 1.4fr; gap:5px; }
+  .dms-field { display:flex; flex-direction:column; gap:3px; }
+  .dms-field label { font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--muted); }
+  .dms-input-wrap { position:relative; }
+  .dms-input-wrap input { font-family:var(--font-mono); font-size:14px; font-weight:500; color:var(--text); background:var(--surface2); border:1px solid var(--border); border-radius:5px; padding:9px 26px 9px 9px; outline:none; transition:border-color 0.15s; width:100%; }
+  .dms-input-wrap input:focus { border-color:var(--accent); }
+  .dms-sym { position:absolute; right:7px; top:50%; transform:translateY(-50%); font-size:13px; color:var(--accent); pointer-events:none; font-weight:500; }
+  .dir-select { font-family:var(--font-mono); font-size:13px; font-weight:500; color:var(--text); background:var(--surface2); border:1px solid var(--border); border-radius:5px; padding:9px 8px; outline:none; cursor:pointer; transition:border-color 0.15s; width:100%; appearance:none; text-align:center; }
+  .dir-select:focus { border-color:var(--accent); }
+  .dms-preview { font-size:11px; color:var(--muted); margin-top:4px; padding:7px 10px; background:rgba(0,229,160,0.04); border:1px solid rgba(0,229,160,0.1); border-radius:4px; }
+  .dms-preview span { color:#4fa8ff; }
+
+  /* ── Swap ── */
+  .swap-wrap { display:flex; justify-content:center; margin:4px 0; }
+  .swap-btn { font-family:var(--font-mono); font-size:12px; color:var(--muted); background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:5px 16px; cursor:pointer; display:flex; align-items:center; gap:6px; transition:all 0.15s; }
+  .swap-btn:hover { color:var(--accent); border-color:var(--accent); }
+
+  /* ── Unit ── */
+  .unit-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; margin-bottom:1.5rem; }
+  .unit-btn { font-family:var(--font-mono); font-size:12px; padding:9px; border:1px solid var(--border); border-radius:5px; background:var(--surface); color:var(--muted2); cursor:pointer; transition:all 0.15s; text-align:center; }
+  .unit-btn:hover { border-color:var(--border2); color:var(--text); }
+  .unit-btn.active { background:rgba(0,229,160,0.08); border-color:var(--accent); color:var(--accent); }
+
+  /* ── Results ── */
+  .result-wrap { margin-top:1.5rem; }
+  .result-main-card { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:1.5rem; position:relative; overflow:hidden; margin-bottom:10px; }
+  .result-main-card::after { content:''; position:absolute; bottom:0; left:0; right:0; height:2px; background:linear-gradient(90deg,var(--accent2),var(--accent)); }
+  .result-distance-label { font-size:10px; letter-spacing:0.18em; text-transform:uppercase; color:var(--muted); margin-bottom:6px; }
+  .result-distance { display:flex; align-items:baseline; gap:10px; margin-bottom:4px; }
+  .result-number { font-family:var(--font-head); font-size:52px; font-weight:800; color:var(--accent); line-height:1; letter-spacing:-2px; }
+  .result-unit-label { font-size:18px; color:var(--muted2); font-family:var(--font-head); }
+  .result-formula { font-size:11px; color:var(--muted); margin-top:4px; }
+
+  .stat-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-bottom:10px; }
+  .stat-card { background:var(--surface); border:1px solid var(--border); border-radius:6px; padding:12px; }
+  .stat-label { font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); margin-bottom:4px; }
+  .stat-value { font-family:var(--font-mono); font-size:13px; font-weight:500; color:var(--text); line-height:1.4; }
+  .stat-value.accent { color:var(--accent); }
+  .stat-value.teal { color:var(--teal); }
+
+  /* ── ETA card ── */
+  .eta-card {
+    background:var(--surface); border:1px solid rgba(0,196,212,0.25);
+    border-radius:8px; padding:1.25rem; margin-bottom:10px;
+    position:relative; overflow:hidden;
+  }
+  .eta-card::before { content:''; position:absolute; top:0; left:0; width:3px; height:100%; background:var(--teal); border-radius:8px 0 0 8px; }
+  .eta-card::after { content:''; position:absolute; bottom:0; left:0; right:0; height:2px; background:linear-gradient(90deg,var(--teal),rgba(0,196,212,0)); }
+
+  .eta-header { display:flex; align-items:center; gap:8px; margin-bottom:14px; }
+  .eta-icon { font-size:18px; }
+  .eta-title { font-family:var(--font-head); font-size:13px; font-weight:600; color:var(--teal); letter-spacing:0.06em; text-transform:uppercase; }
+
+  .eta-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px; }
+  .eta-block { background:var(--surface2); border:1px solid var(--border); border-radius:6px; padding:14px 16px; }
+  .eta-tz-label { font-size:10px; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted); margin-bottom:6px; display:flex; align-items:center; gap:6px; }
+  .tz-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+  .tz-dot-utc { background:#a78bfa; }
+  .tz-dot-tw { background:var(--amber); }
+  .eta-time { font-family:var(--font-head); font-size:22px; font-weight:700; color:var(--text); letter-spacing:-0.5px; margin-bottom:2px; }
+  .eta-date { font-size:12px; color:var(--muted2); }
+
+  .eta-stats { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
+  .eta-stat { text-align:center; padding:10px; background:rgba(0,196,212,0.04); border:1px solid rgba(0,196,212,0.1); border-radius:5px; }
+  .eta-stat-label { font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); margin-bottom:4px; }
+  .eta-stat-value { font-family:var(--font-head); font-size:16px; font-weight:700; color:var(--teal); }
+
+  .map-wrap { border:1px solid var(--border); border-radius:8px; overflow:hidden; background:var(--surface); margin-bottom:10px; }
+  .map-header { display:flex; align-items:center; justify-content:space-between; padding:8px 14px; border-bottom:1px solid var(--border); font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); }
+  canvas#map { display:block; width:100%; height:200px; }
+
+  .error-msg { font-size:13px; color:var(--danger); padding:12px 0; }
+  .empty-state { text-align:center; padding:2rem; color:var(--muted); font-size:13px; line-height:1.8; }
+
+  footer { margin-top:3rem; padding-top:1.5rem; border-top:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; font-size:11px; color:var(--muted); flex-wrap:wrap; gap:8px; }
+
+  /* ── Obstruction warning card ── */
+  .obstruction-card {
+    background:var(--surface); border:1px solid rgba(255,82,82,0.35);
+    border-radius:8px; padding:1.25rem; margin-bottom:10px; position:relative; overflow:hidden;
+  }
+  .obstruction-card::before { content:''; position:absolute; top:0; left:0; width:3px; height:100%; background:var(--danger); border-radius:8px 0 0 8px; }
+  .obs-header { display:flex; align-items:flex-start; gap:10px; margin-bottom:14px; }
+  .obs-icon { font-size:20px; flex-shrink:0; margin-top:2px; }
+  .obs-title { font-family:var(--font-head); font-size:13px; font-weight:600; color:var(--danger); letter-spacing:0.04em; text-transform:uppercase; margin-bottom:3px; }
+  .obs-sub { font-size:11px; color:var(--muted2); }
+  .obs-compare { display:flex; align-items:center; gap:10px; background:var(--surface2); border-radius:6px; padding:12px 14px; margin-bottom:12px; flex-wrap:wrap; }
+  .obs-dist-block { flex:1; min-width:120px; }
+  .obs-dist-label { font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); margin-bottom:4px; }
+  .obs-dist-val { font-family:var(--font-head); font-size:20px; font-weight:700; }
+  .obs-dist-val.red { color:var(--danger); text-decoration:line-through; opacity:0.7; }
+  .obs-dist-val.amber { color:var(--amber); }
+  .obs-arrow { font-size:20px; color:var(--muted); }
+  .obs-waypoints-label { font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); margin-bottom:8px; }
+  .waypoint-row { display:flex; align-items:center; gap:8px; padding:7px 10px; background:rgba(255,184,48,0.05); border:1px solid rgba(255,184,48,0.15); border-radius:5px; margin-bottom:5px; flex-wrap:wrap; }
+  .wp-num { font-family:var(--font-head); font-size:11px; font-weight:700; color:var(--amber); background:rgba(255,184,48,0.15); padding:2px 7px; border-radius:3px; flex-shrink:0; }
+  .wp-label { font-size:12px; color:var(--text); flex:1; }
+  .wp-coord { font-size:10px; color:var(--muted); font-family:var(--font-mono); white-space:nowrap; }
+
+
+    .result-number{font-size:36px;}
+    .stat-grid{grid-template-columns:1fr 1fr;}
+    .eta-grid{grid-template-columns:1fr;}
+    .eta-stats{grid-template-columns:1fr 1fr;}
+    .dms-coord-row{grid-template-columns:1fr;}
+    .speed-row{grid-template-columns:1fr;}
+    .depart-row{grid-template-columns:1fr;}
+    header{flex-direction:column;align-items:flex-start;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <div>
+      <div class="logo">Geo<span>Distance</span></div>
+      <div class="logo-sub">Marine Navigator Edition</div>
+    </div>
+    <div class="header-right">
+      <div class="offline-badge"><div class="offline-dot"></div>offline ready</div>
       <div class="version">v6.0</div>
     </div>
   </header>
