@@ -26,15 +26,607 @@
     --font-mono: 'DM Mono', monospace;
   }
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--font-mono);
-    min-height: 100vh;
-    overflow-x: hidden;
+  body { background:var(--bg); color:var(--text); font-family:var(--font-mono); min-height:100vh; overflow-x:hidden; }
+
+  body::before {
+    content:''; position:fixed; inset:0;
+    background-image: linear-gradient(rgba(0,229,160,0.03) 1px,transparent 1px), linear-gradient(90deg,rgba(0,229,160,0.03) 1px,transparent 1px);
+    background-size:40px 40px; pointer-events:none; z-index:0;
   }
 
-  /* Grid background */
+  .app { position:relative; z-index:1; max-width:820px; margin:0 auto; padding:2rem 1.5rem 4rem; }
+
+  header { display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:2.5rem; padding-bottom:1.5rem; border-bottom:1px solid var(--border); flex-wrap:wrap; gap:10px; }
+  .logo { font-family:var(--font-head); font-size:28px; font-weight:800; letter-spacing:-0.5px; color:var(--text); }
+  .logo span { color:var(--accent); }
+  .header-right { display:flex; align-items:center; gap:10px; }
+  .version { font-size:11px; color:var(--muted); letter-spacing:0.12em; text-transform:uppercase; padding:4px 10px; border:1px solid var(--border2); border-radius:20px; }
+  .offline-badge { display:flex; align-items:center; gap:6px; padding:4px 10px; border:1px solid rgba(0,229,160,0.3); border-radius:20px; font-size:10px; color:var(--accent); letter-spacing:0.1em; text-transform:uppercase; }
+  .offline-dot { width:6px; height:6px; border-radius:50%; background:var(--accent); animation:pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  .label { font-size:10px; letter-spacing:0.15em; text-transform:uppercase; color:var(--muted); margin-bottom:10px; display:flex; align-items:center; gap:8px; }
+  .label::after { content:''; flex:1; height:1px; background:var(--border); }
+
+  .presets { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:1.5rem; }
+  .preset { font-family:var(--font-mono); font-size:11px; padding:5px 12px; border:1px solid var(--border2); border-radius:3px; background:var(--surface); color:var(--muted2); cursor:pointer; transition:all 0.15s; letter-spacing:0.02em; }
+  .preset:hover { border-color:var(--accent); color:var(--accent); background:rgba(0,229,160,0.05); }
+
+  /* Mode toggle */
+  .mode-row { display:flex; align-items:center; gap:10px; margin-bottom:1.25rem; flex-wrap:wrap; }
+  .mode-label { font-size:11px; color:var(--muted); letter-spacing:0.08em; text-transform:uppercase; }
+  .mode-toggle { display:flex; background:var(--surface2); border:1px solid var(--border); border-radius:6px; overflow:hidden; }
+  .mode-btn { font-family:var(--font-mono); font-size:11px; padding:7px 16px; background:transparent; border:none; color:var(--muted2); cursor:pointer; transition:all 0.15s; letter-spacing:0.04em; white-space:nowrap; }
+  .mode-btn.active { background:rgba(0,229,160,0.12); color:var(--accent); }
+
+  /* Point card */
+  .point-card { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:1.25rem; margin-bottom:8px; position:relative; overflow:hidden; transition:border-color 0.2s; }
+  .point-card:focus-within { border-color:var(--border2); }
+  .point-card::before { content:''; position:absolute; top:0; left:0; width:3px; height:100%; border-radius:8px 0 0 8px; }
+  .card-a::before { background:var(--accent2); }
+  .card-b::before { background:var(--amber); }
+
+  .point-header { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+  .badge { width:26px; height:26px; border-radius:4px; display:flex; align-items:center; justify-content:center; font-family:var(--font-head); font-size:13px; font-weight:700; flex-shrink:0; }
+  .badge-a { background:rgba(0,119,255,0.15); color:#4fa8ff; }
+  .badge-b { background:rgba(255,184,48,0.15); color:var(--amber); }
+  .point-name { font-family:var(--font-head); font-size:13px; font-weight:500; color:var(--muted2); letter-spacing:0.05em; text-transform:uppercase; }
+  .city-tag { margin-left:auto; font-size:11px; color:var(--muted); font-family:var(--font-mono); }
+
+  /* Decimal inputs */
+  .input-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .field { display:flex; flex-direction:column; gap:5px; }
+  .field label { font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); }
+  .field input { font-family:var(--font-mono); font-size:15px; font-weight:500; color:var(--text); background:var(--surface2); border:1px solid var(--border); border-radius:5px; padding:10px 12px; outline:none; transition:border-color 0.15s; width:100%; }
+  .field input::placeholder { color:var(--muted); font-weight:400; font-size:13px; }
+  .field input:focus { border-color:var(--accent); }
+
+  /* DMS */
+  .dms-group { display:flex; flex-direction:column; gap:12px; }
+  .dms-coord-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .dms-coord-block { display:flex; flex-direction:column; gap:6px; }
+  .dms-coord-label { font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); margin-bottom:2px; }
+  .dms-triple { display:grid; grid-template-columns:1fr 1fr 1.4fr; gap:5px; }
+  .dms-field { display:flex; flex-direction:column; gap:3px; }
+  .dms-field label { font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--muted); }
+  .dms-input-wrap { position:relative; }
+  .dms-input-wrap input { font-family:var(--font-mono); font-size:14px; font-weight:500; color:var(--text); background:var(--surface2); border:1px solid var(--border); border-radius:5px; padding:9px 26px 9px 9px; outline:none; transition:border-color 0.15s; width:100%; }
+  .dms-input-wrap input:focus { border-color:var(--accent); }
+  .dms-sym { position:absolute; right:7px; top:50%; transform:translateY(-50%); font-size:13px; color:var(--accent); pointer-events:none; font-weight:500; }
+  .dir-select { font-family:var(--font-mono); font-size:13px; font-weight:500; color:var(--text); background:var(--surface2); border:1px solid var(--border); border-radius:5px; padding:9px 8px; outline:none; cursor:pointer; transition:border-color 0.15s; width:100%; appearance:none; text-align:center; }
+  .dir-select:focus { border-color:var(--accent); }
+  .dms-preview { font-size:11px; color:var(--muted); margin-top:4px; padding:7px 10px; background:rgba(0,229,160,0.04); border:1px solid rgba(0,229,160,0.1); border-radius:4px; letter-spacing:0.03em; }
+  .dms-preview span { color:#4fa8ff; }
+
+  /* Swap */
+  .swap-wrap { display:flex; justify-content:center; margin:4px 0; }
+  .swap-btn { font-family:var(--font-mono); font-size:12px; color:var(--muted); background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:5px 16px; cursor:pointer; display:flex; align-items:center; gap:6px; transition:all 0.15s; }
+  .swap-btn:hover { color:var(--accent); border-color:var(--accent); }
+
+  /* Unit */
+  .unit-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; margin-bottom:1.5rem; }
+  .unit-btn { font-family:var(--font-mono); font-size:12px; padding:9px; border:1px solid var(--border); border-radius:5px; background:var(--surface); color:var(--muted2); cursor:pointer; transition:all 0.15s; text-align:center; }
+  .unit-btn:hover { border-color:var(--border2); color:var(--text); }
+  .unit-btn.active { background:rgba(0,229,160,0.08); border-color:var(--accent); color:var(--accent); }
+
+  /* Results */
+  .result-wrap { margin-top:1.5rem; }
+  .result-main-card { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:1.5rem; position:relative; overflow:hidden; margin-bottom:10px; }
+  .result-main-card::after { content:''; position:absolute; bottom:0; left:0; right:0; height:2px; background:linear-gradient(90deg,var(--accent2),var(--accent)); }
+  .result-distance-label { font-size:10px; letter-spacing:0.18em; text-transform:uppercase; color:var(--muted); margin-bottom:6px; }
+  .result-distance { display:flex; align-items:baseline; gap:10px; margin-bottom:4px; }
+  .result-number { font-family:var(--font-head); font-size:52px; font-weight:800; color:var(--accent); line-height:1; letter-spacing:-2px; }
+  .result-unit-label { font-size:18px; color:var(--muted2); font-family:var(--font-head); }
+  .result-formula { font-size:11px; color:var(--muted); margin-top:4px; }
+
+  .stat-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-bottom:10px; }
+  .stat-card { background:var(--surface); border:1px solid var(--border); border-radius:6px; padding:12px; }
+  .stat-label { font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); margin-bottom:4px; }
+  .stat-value { font-family:var(--font-mono); font-size:13px; font-weight:500; color:var(--text); }
+  .stat-value.accent { color:var(--accent); }
+
+  .map-wrap { border:1px solid var(--border); border-radius:8px; overflow:hidden; background:var(--surface); margin-bottom:10px; }
+  .map-header { display:flex; align-items:center; justify-content:space-between; padding:8px 14px; border-bottom:1px solid var(--border); font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); }
+  canvas#map { display:block; width:100%; height:200px; }
+
+  .error-msg { font-size:13px; color:var(--danger); padding:12px 0; font-family:var(--font-mono); }
+  .empty-state { text-align:center; padding:2rem; color:var(--muted); font-size:13px; line-height:1.8; }
+
+  footer { margin-top:3rem; padding-top:1.5rem; border-top:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; font-size:11px; color:var(--muted); letter-spacing:0.05em; flex-wrap:wrap; gap:8px; }
+
+  @media(max-width:540px){
+    .result-number{font-size:36px;}
+    .stat-grid{grid-template-columns:1fr 1fr;}
+    .dms-coord-row{grid-template-columns:1fr;}
+    .dms-triple{grid-template-columns:1fr 1fr 1fr;}
+    header{flex-direction:column;align-items:flex-start;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <div class="logo">Geo<span>Distance</span></div>
+    <div class="header-right">
+      <div class="offline-badge"><div class="offline-dot"></div>offline ready</div>
+      <div class="version">v2.0</div>
+    </div>
+  </header>
+
+  <div class="label">Quick city pairs 快速城市組合</div>
+  <div class="presets">
+    <button class="preset" onclick="loadPreset('tokyo','sydney')">Tokyo → Sydney</button>
+    <button class="preset" onclick="loadPreset('london','nyc')">London → New York</button>
+    <button class="preset" onclick="loadPreset('paris','dubai')">Paris → Dubai</button>
+    <button class="preset" onclick="loadPreset('la','taipei')">LA → Taipei</button>
+    <button class="preset" onclick="loadPreset('cairo','capetown')">Cairo → Cape Town</button>
+    <button class="preset" onclick="loadPreset('moscow','beijing')">Moscow → Beijing</button>
+    <button class="preset" onclick="loadPreset('mumbai','singapore')">Mumbai → Singapore</button>
+  </div>
+
+  <!-- Mode toggle -->
+  <div class="mode-row">
+    <span class="mode-label">座標格式</span>
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="mode-dec" onclick="setMode('decimal')">十進位 Decimal</button>
+      <button class="mode-btn" id="mode-dms" onclick="setMode('dms')">度° 分′ 秒″ DMS</button>
+    </div>
+  </div>
+
+  <!-- ── POINT A ── -->
+  <div class="label">Point A — 起點 origin</div>
+  <div class="point-card card-a">
+    <div class="point-header">
+      <div class="badge badge-a">A</div>
+      <span class="point-name">Origin 起點</span>
+      <span class="city-tag" id="tag-a"></span>
+    </div>
+
+    <div id="dec-a">
+      <div class="input-row">
+        <div class="field">
+          <label>緯度 Latitude (−90 to 90)</label>
+          <input type="number" id="lat1" placeholder="e.g. 51.5074" step="any" oninput="calc()" />
+        </div>
+        <div class="field">
+          <label>經度 Longitude (−180 to 180)</label>
+          <input type="number" id="lon1" placeholder="e.g. −0.1278" step="any" oninput="calc()" />
+        </div>
+      </div>
+    </div>
+
+    <div id="dms-a" style="display:none;">
+      <div class="dms-group">
+        <div class="dms-coord-row">
+          <div class="dms-coord-block">
+            <div class="dms-coord-label">緯度 Latitude</div>
+            <div class="dms-triple">
+              <div class="dms-field">
+                <label>度°</label>
+                <div class="dms-input-wrap"><input type="number" id="a-lat-d" min="0" max="90" placeholder="0" oninput="dmsCalc()"><span class="dms-sym">°</span></div>
+              </div>
+              <div class="dms-field">
+                <label>分′</label>
+                <div class="dms-input-wrap"><input type="number" id="a-lat-m" min="0" max="59" placeholder="0" oninput="dmsCalc()"><span class="dms-sym">′</span></div>
+              </div>
+              <div class="dms-field">
+                <label>秒″</label>
+                <div class="dms-input-wrap"><input type="number" id="a-lat-s" min="0" max="59.999" step="0.001" placeholder="0.000" oninput="dmsCalc()"><span class="dms-sym">″</span></div>
+              </div>
+            </div>
+            <select class="dir-select" id="a-lat-dir" onchange="dmsCalc()">
+              <option value="N">N 北緯</option>
+              <option value="S">S 南緯</option>
+            </select>
+          </div>
+          <div class="dms-coord-block">
+            <div class="dms-coord-label">經度 Longitude</div>
+            <div class="dms-triple">
+              <div class="dms-field">
+                <label>度°</label>
+                <div class="dms-input-wrap"><input type="number" id="a-lon-d" min="0" max="180" placeholder="0" oninput="dmsCalc()"><span class="dms-sym">°</span></div>
+              </div>
+              <div class="dms-field">
+                <label>分′</label>
+                <div class="dms-input-wrap"><input type="number" id="a-lon-m" min="0" max="59" placeholder="0" oninput="dmsCalc()"><span class="dms-sym">′</span></div>
+              </div>
+              <div class="dms-field">
+                <label>秒″</label>
+                <div class="dms-input-wrap"><input type="number" id="a-lon-s" min="0" max="59.999" step="0.001" placeholder="0.000" oninput="dmsCalc()"><span class="dms-sym">″</span></div>
+              </div>
+            </div>
+            <select class="dir-select" id="a-lon-dir" onchange="dmsCalc()">
+              <option value="E">E 東經</option>
+              <option value="W">W 西經</option>
+            </select>
+          </div>
+        </div>
+        <div class="dms-preview" id="preview-a">輸入度分秒後顯示十進位預覽</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="swap-wrap">
+    <button class="swap-btn" onclick="swapPoints()">⇅ swap A ↔ B</button>
+  </div>
+
+  <!-- ── POINT B ── -->
+  <div class="label">Point B — 終點 destination</div>
+  <div class="point-card card-b">
+    <div class="point-header">
+      <div class="badge badge-b">B</div>
+      <span class="point-name">Destination 終點</span>
+      <span class="city-tag" id="tag-b"></span>
+    </div>
+
+    <div id="dec-b">
+      <div class="input-row">
+        <div class="field">
+          <label>緯度 Latitude (−90 to 90)</label>
+          <input type="number" id="lat2" placeholder="e.g. 40.7128" step="any" oninput="calc()" />
+        </div>
+        <div class="field">
+          <label>經度 Longitude (−180 to 180)</label>
+          <input type="number" id="lon2" placeholder="e.g. −74.0060" step="any" oninput="calc()" />
+        </div>
+      </div>
+    </div>
+
+    <div id="dms-b" style="display:none;">
+      <div class="dms-group">
+        <div class="dms-coord-row">
+          <div class="dms-coord-block">
+            <div class="dms-coord-label">緯度 Latitude</div>
+            <div class="dms-triple">
+              <div class="dms-field">
+                <label>度°</label>
+                <div class="dms-input-wrap"><input type="number" id="b-lat-d" min="0" max="90" placeholder="0" oninput="dmsCalc()"><span class="dms-sym">°</span></div>
+              </div>
+              <div class="dms-field">
+                <label>分′</label>
+                <div class="dms-input-wrap"><input type="number" id="b-lat-m" min="0" max="59" placeholder="0" oninput="dmsCalc()"><span class="dms-sym">′</span></div>
+              </div>
+              <div class="dms-field">
+                <label>秒″</label>
+                <div class="dms-input-wrap"><input type="number" id="b-lat-s" min="0" max="59.999" step="0.001" placeholder="0.000" oninput="dmsCalc()"><span class="dms-sym">″</span></div>
+              </div>
+            </div>
+            <select class="dir-select" id="b-lat-dir" onchange="dmsCalc()">
+              <option value="N">N 北緯</option>
+              <option value="S">S 南緯</option>
+            </select>
+          </div>
+          <div class="dms-coord-block">
+            <div class="dms-coord-label">經度 Longitude</div>
+            <div class="dms-triple">
+              <div class="dms-field">
+                <label>度°</label>
+                <div class="dms-input-wrap"><input type="number" id="b-lon-d" min="0" max="180" placeholder="0" oninput="dmsCalc()"><span class="dms-sym">°</span></div>
+              </div>
+              <div class="dms-field">
+                <label>分′</label>
+                <div class="dms-input-wrap"><input type="number" id="b-lon-m" min="0" max="59" placeholder="0" oninput="dmsCalc()"><span class="dms-sym">′</span></div>
+              </div>
+              <div class="dms-field">
+                <label>秒″</label>
+                <div class="dms-input-wrap"><input type="number" id="b-lon-s" min="0" max="59.999" step="0.001" placeholder="0.000" oninput="dmsCalc()"><span class="dms-sym">″</span></div>
+              </div>
+            </div>
+            <select class="dir-select" id="b-lon-dir" onchange="dmsCalc()">
+              <option value="E">E 東經</option>
+              <option value="W">W 西經</option>
+            </select>
+          </div>
+        </div>
+        <div class="dms-preview" id="preview-b">輸入度分秒後顯示十進位預覽</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:1.25rem;" class="label">距離單位 Unit of measurement</div>
+  <div class="unit-row">
+    <button class="unit-btn active" id="u-km" onclick="setUnit('km')">公里 km</button>
+    <button class="unit-btn" id="u-mi" onclick="setUnit('mi')">英里 mi</button>
+    <button class="unit-btn" id="u-nm" onclick="setUnit('nm')">海里 NM</button>
+  </div>
+
+  <div id="result-area" class="result-wrap">
+    <div class="empty-state">選擇輸入格式，填入座標或選擇城市組合<br>以開始計算距離</div>
+  </div>
+
+  <footer>
+    <span>Haversine formula · Earth radius 6,371 km</span>
+    <span>100% offline · 不傳送任何資料</span>
+  </footer>
+</div>
+
+<script>
+  let unit = 'km';
+  let coordMode = 'decimal';
+  const R = { km:6371, mi:3958.8, nm:3440.1 };
+  const unitLabel = { km:'km', mi:'mi', nm:'NM' };
+
+  const presets = {
+    tokyo:     {name:'Tokyo, JP',       lat:35.6762,  lon:139.6503},
+    sydney:    {name:'Sydney, AU',      lat:-33.8688, lon:151.2093},
+    london:    {name:'London, UK',      lat:51.5074,  lon:-0.1278 },
+    nyc:       {name:'New York, US',    lat:40.7128,  lon:-74.0060},
+    paris:     {name:'Paris, FR',       lat:48.8566,  lon:2.3522  },
+    dubai:     {name:'Dubai, UAE',      lat:25.2048,  lon:55.2708 },
+    la:        {name:'Los Angeles, US', lat:34.0522,  lon:-118.2437},
+    taipei:    {name:'Taipei, TW',      lat:25.0330,  lon:121.5654},
+    cairo:     {name:'Cairo, EG',       lat:30.0444,  lon:31.2357 },
+    capetown:  {name:'Cape Town, ZA',   lat:-33.9249, lon:18.4241 },
+    moscow:    {name:'Moscow, RU',      lat:55.7558,  lon:37.6173 },
+    beijing:   {name:'Beijing, CN',     lat:39.9042,  lon:116.4074},
+    mumbai:    {name:'Mumbai, IN',      lat:19.0760,  lon:72.8777 },
+    singapore: {name:'Singapore, SG',   lat:1.3521,   lon:103.8198}
+  };
+
+  // ── DMS conversion ────────────────────────────────────────
+  function decToDMS(dec) {
+    const abs = Math.abs(dec);
+    const d = Math.floor(abs);
+    const mFull = (abs - d) * 60;
+    const m = Math.floor(mFull);
+    const s = (mFull - m) * 60;
+    return {d, m, s};
+  }
+
+  function dmsToDecSigned(d, m, s, dir) {
+    const abs = (parseFloat(d)||0) + (parseFloat(m)||0)/60 + (parseFloat(s)||0)/3600;
+    return (dir==='S'||dir==='W') ? -abs : abs;
+  }
+
+  function fmtDMS(dec, isLat) {
+    const abs = Math.abs(dec);
+    const d = Math.floor(abs);
+    const mFull = (abs - d) * 60;
+    const m = Math.floor(mFull);
+    const s = ((mFull - m) * 60).toFixed(2);
+    const dir = isLat ? (dec >= 0 ? 'N' : 'S') : (dec >= 0 ? 'E' : 'W');
+    return `${d}° ${m}′ ${s}″ ${dir}`;
+  }
+
+  function fillDMSInputs(prefix, lat, lon) {
+    const ld = decToDMS(lat), lnd = decToDMS(lon);
+    document.getElementById(`${prefix}-lat-d`).value = ld.d;
+    document.getElementById(`${prefix}-lat-m`).value = ld.m;
+    document.getElementById(`${prefix}-lat-s`).value = ld.s.toFixed(3);
+    document.getElementById(`${prefix}-lat-dir`).value = lat >= 0 ? 'N' : 'S';
+    document.getElementById(`${prefix}-lon-d`).value = lnd.d;
+    document.getElementById(`${prefix}-lon-m`).value = lnd.m;
+    document.getElementById(`${prefix}-lon-s`).value = lnd.s.toFixed(3);
+    document.getElementById(`${prefix}-lon-dir`).value = lon >= 0 ? 'E' : 'W';
+  }
+
+  function readDMS(prefix) {
+    const lat = dmsToDecSigned(
+      document.getElementById(`${prefix}-lat-d`).value,
+      document.getElementById(`${prefix}-lat-m`).value,
+      document.getElementById(`${prefix}-lat-s`).value,
+      document.getElementById(`${prefix}-lat-dir`).value
+    );
+    const lon = dmsToDecSigned(
+      document.getElementById(`${prefix}-lon-d`).value,
+      document.getElementById(`${prefix}-lon-m`).value,
+      document.getElementById(`${prefix}-lon-s`).value,
+      document.getElementById(`${prefix}-lon-dir`).value
+    );
+    return {lat, lon};
+  }
+
+  function updatePreview(prefix, lat, lon) {
+    const el = document.getElementById(`preview-${prefix}`);
+    const hasInput = document.getElementById(`${prefix}-lat-d`).value !== '' ||
+                     document.getElementById(`${prefix}-lon-d`).value !== '';
+    if (!hasInput || isNaN(lat) || isNaN(lon)) {
+      el.innerHTML = '輸入度分秒後顯示十進位預覽'; return;
+    }
+    el.innerHTML = `十進位換算：<span>${lat.toFixed(6)}°, ${lon.toFixed(6)}°</span>`;
+  }
+
+  // ── Mode switch ───────────────────────────────────────────
+  function setMode(mode) {
+    coordMode = mode;
+    document.getElementById('mode-dec').classList.toggle('active', mode==='decimal');
+    document.getElementById('mode-dms').classList.toggle('active', mode==='dms');
+    ['dec-a','dec-b'].forEach(id => document.getElementById(id).style.display = mode==='decimal' ? '' : 'none');
+    ['dms-a','dms-b'].forEach(id => document.getElementById(id).style.display = mode==='dms' ? '' : 'none');
+
+    if (mode==='dms') {
+      const lat1=parseFloat(document.getElementById('lat1').value);
+      const lon1=parseFloat(document.getElementById('lon1').value);
+      const lat2=parseFloat(document.getElementById('lat2').value);
+      const lon2=parseFloat(document.getElementById('lon2').value);
+      if (!isNaN(lat1)&&!isNaN(lon1)) fillDMSInputs('a', lat1, lon1);
+      if (!isNaN(lat2)&&!isNaN(lon2)) fillDMSInputs('b', lat2, lon2);
+      dmsCalc();
+    } else {
+      const a=readDMS('a'), b=readDMS('b');
+      if (!isNaN(a.lat)) { document.getElementById('lat1').value=a.lat.toFixed(6); document.getElementById('lon1').value=a.lon.toFixed(6); }
+      if (!isNaN(b.lat)) { document.getElementById('lat2').value=b.lat.toFixed(6); document.getElementById('lon2').value=b.lon.toFixed(6); }
+      calc();
+    }
+  }
+
+  function dmsCalc() {
+    const a=readDMS('a'), b=readDMS('b');
+    updatePreview('a', a.lat, a.lon);
+    updatePreview('b', b.lat, b.lon);
+    document.getElementById('lat1').value = a.lat;
+    document.getElementById('lon1').value = a.lon;
+    document.getElementById('lat2').value = b.lat;
+    document.getElementById('lon2').value = b.lon;
+    calc();
+  }
+
+  // ── Core ──────────────────────────────────────────────────
+  function loadPreset(a, b) {
+    const pa=presets[a], pb=presets[b];
+    document.getElementById('tag-a').textContent = pa.name;
+    document.getElementById('tag-b').textContent = pb.name;
+    document.getElementById('lat1').value = pa.lat;
+    document.getElementById('lon1').value = pa.lon;
+    document.getElementById('lat2').value = pb.lat;
+    document.getElementById('lon2').value = pb.lon;
+    if (coordMode==='dms') { fillDMSInputs('a',pa.lat,pa.lon); fillDMSInputs('b',pb.lat,pb.lon); dmsCalc(); }
+    else calc();
+  }
+
+  function setUnit(u) {
+    unit=u;
+    ['km','mi','nm'].forEach(k=>document.getElementById('u-'+k).classList.toggle('active',k===u));
+    calc();
+  }
+
+  function toRad(d) { return d*Math.PI/180; }
+
+  function haversine(lat1,lon1,lat2,lon2,r) {
+    r=r||R[unit];
+    const dlat=toRad(lat2-lat1), dlon=toRad(lon2-lon1);
+    const a=Math.sin(dlat/2)**2+Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dlon/2)**2;
+    return r*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+  }
+
+  function bearing(lat1,lon1,lat2,lon2) {
+    const dlon=toRad(lon2-lon1);
+    const y=Math.sin(dlon)*Math.cos(toRad(lat2));
+    const x=Math.cos(toRad(lat1))*Math.sin(toRad(lat2))-Math.sin(toRad(lat1))*Math.cos(toRad(lat2))*Math.cos(dlon);
+    return (Math.atan2(y,x)*180/Math.PI+360)%360;
+  }
+
+  function bearingLabel(b) { return ['N','NE','E','SE','S','SW','W','NW','N'][Math.round(b/45)]; }
+
+  function midpoint(lat1,lon1,lat2,lon2) {
+    const phi1=toRad(lat1),phi2=toRad(lat2),lam1=toRad(lon1),dlam=toRad(lon2-lon1);
+    const Bx=Math.cos(phi2)*Math.cos(dlam),By=Math.cos(phi2)*Math.sin(dlam);
+    const phi=Math.atan2(Math.sin(phi1)+Math.sin(phi2),Math.sqrt((Math.cos(phi1)+Bx)**2+By**2));
+    const lam=lam1+Math.atan2(By,Math.cos(phi1)+Bx);
+    return [phi*180/Math.PI,lam*180/Math.PI];
+  }
+
+  function fmtNum(n) {
+    if (n>=10000) return n.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g,',');
+    if (n>=100) return n.toFixed(1);
+    return n.toFixed(3);
+  }
+
+  function swapPoints() {
+    if (coordMode==='dms') {
+      const a=readDMS('a'),b=readDMS('b');
+      fillDMSInputs('a',b.lat,b.lon); fillDMSInputs('b',a.lat,a.lon); dmsCalc();
+    } else {
+      const v1=document.getElementById('lat1').value,v2=document.getElementById('lon1').value;
+      const v3=document.getElementById('lat2').value,v4=document.getElementById('lon2').value;
+      document.getElementById('lat1').value=v3; document.getElementById('lon1').value=v4;
+      document.getElementById('lat2').value=v1; document.getElementById('lon2').value=v2;
+      calc();
+    }
+    const ta=document.getElementById('tag-a').textContent,tb=document.getElementById('tag-b').textContent;
+    document.getElementById('tag-a').textContent=tb; document.getElementById('tag-b').textContent=ta;
+  }
+
+  function drawMap(lat1,lon1,lat2,lon2) {
+    const canvas=document.getElementById('map'); if(!canvas)return;
+    const W=canvas.offsetWidth,H=200; canvas.width=W; canvas.height=H;
+    const ctx=canvas.getContext('2d');
+    ctx.fillStyle='#0d0f14'; ctx.fillRect(0,0,W,H);
+    function proj(lat,lon){return[((lon+180)/360)*W,((90-lat)/180)*H];}
+    ctx.strokeStyle='rgba(255,255,255,0.04)'; ctx.lineWidth=1;
+    for(let l=-180;l<=180;l+=30){const[x]=proj(0,l);ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+    for(let l=-90;l<=90;l+=30){const[,y]=proj(l,0);ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+    const[,ey]=proj(0,0); ctx.strokeStyle='rgba(255,255,255,0.08)'; ctx.beginPath();ctx.moveTo(0,ey);ctx.lineTo(W,ey);ctx.stroke();
+    const[x1,y1]=proj(lat1,lon1),[x2,y2]=proj(lat2,lon2),steps=80;
+    function drawPath(c,lw,dash){ctx.strokeStyle=c;ctx.lineWidth=lw;ctx.setLineDash(dash||[]);ctx.beginPath();for(let i=0;i<=steps;i++){const t=i/steps,lt=lat1+(lat2-lat1)*t,ln=lon1+(lon2-lon1)*t;const[px,py]=proj(lt,ln);i===0?ctx.moveTo(px,py):ctx.lineTo(px,py);}ctx.stroke();ctx.setLineDash([]);}
+    drawPath('rgba(0,229,160,0.15)',6,[5,4]);
+    drawPath('rgba(0,229,160,0.55)',1.5,[5,4]);
+    [[x1,y1,'#4fa8ff','#0077ff','A'],[x2,y2,'#ffb830','#cc8800','B']].forEach(([x,y,f,r,l])=>{
+      ctx.beginPath();ctx.arc(x,y,12,0,Math.PI*2);ctx.fillStyle='rgba(0,0,0,0.6)';ctx.fill();
+      ctx.strokeStyle=r;ctx.lineWidth=1.5;ctx.stroke();
+      ctx.beginPath();ctx.arc(x,y,5,0,Math.PI*2);ctx.fillStyle=f;ctx.fill();
+      ctx.fillStyle=f;ctx.font='bold 9px DM Mono,monospace';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(l,x,y-17);
+    });
+    const[mlat,mlon]=midpoint(lat1,lon1,lat2,lon2);
+    const[mx,my]=proj(mlat,mlon);
+    const dist=haversine(lat1,lon1,lat2,lon2);
+    const dLabel=fmtNum(dist)+' '+unitLabel[unit];
+    ctx.font='500 11px DM Mono,monospace';
+    const tw=ctx.measureText(dLabel).width;
+    ctx.fillStyle='rgba(13,15,20,0.9)';ctx.beginPath();ctx.roundRect(mx-tw/2-8,my-12,tw+16,24,4);ctx.fill();
+    ctx.strokeStyle='rgba(0,229,160,0.4)';ctx.lineWidth=1;ctx.stroke();
+    ctx.fillStyle='#00e5a0';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(dLabel,mx,my);
+  }
+
+  function calc() {
+    const lat1=parseFloat(document.getElementById('lat1').value);
+    const lon1=parseFloat(document.getElementById('lon1').value);
+    const lat2=parseFloat(document.getElementById('lat2').value);
+    const lon2=parseFloat(document.getElementById('lon2').value);
+    const area=document.getElementById('result-area');
+
+    if([lat1,lon1,lat2,lon2].some(isNaN)){
+      area.innerHTML='<div class="empty-state">選擇輸入格式，填入座標或選擇城市組合<br>以開始計算距離</div>'; return;
+    }
+    if(Math.abs(lat1)>90||Math.abs(lat2)>90){area.innerHTML='<p class="error-msg">⚠ 緯度必須介於 −90 到 90 之間。</p>';return;}
+    if(Math.abs(lon1)>180||Math.abs(lon2)>180){area.innerHTML='<p class="error-msg">⚠ 經度必須介於 −180 到 180 之間。</p>';return;}
+
+    const dist=haversine(lat1,lon1,lat2,lon2);
+    const bear=bearing(lat1,lon1,lat2,lon2);
+    const[mlat,mlon]=midpoint(lat1,lon1,lat2,lon2);
+    const kmDist=haversine(lat1,lon1,lat2,lon2,6371);
+
+    area.innerHTML=`
+      <div class="result-main-card">
+        <div class="result-distance-label">大圓距離 Great-circle distance</div>
+        <div class="result-distance">
+          <span class="result-number">${fmtNum(dist)}</span>
+          <span class="result-unit-label">${unitLabel[unit]}</span>
+        </div>
+        <div class="result-formula">Haversine formula · spherical Earth model (R = 6,371 km)</div>
+      </div>
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-label">公里 Kilometers</div>
+          <div class="stat-value accent">${fmtNum(kmDist)} km</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">英里 Miles</div>
+          <div class="stat-value">${fmtNum(kmDist*0.621371)} mi</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">海里 Nautical</div>
+          <div class="stat-value">${fmtNum(kmDist*0.539957)} NM</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">方位角 Bearing</div>
+          <div class="stat-value">${bear.toFixed(2)}° ${bearingLabel(bear)}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">中點緯度 Mid Lat</div>
+          <div class="stat-value">${fmtDMS(mlat,true)}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">中點經度 Mid Lon</div>
+          <div class="stat-value">${fmtDMS(mlon,false)}</div>
+        </div>
+      </div>
+      <div class="map-wrap">
+        <div class="map-header">
+          <span>地圖預覽 Map preview</span>
+          <span style="color:#6b7391;">great-circle path 大圓路徑</span>
+        </div>
+        <canvas id="map"></canvas>
+      </div>`;
+
+    requestAnimationFrame(()=>drawMap(lat1,lon1,lat2,lon2));
+  }
+
+  loadPreset('london','nyc');
+</script>
+</body>
+</html>  /* Grid background */
   body::before {
     content: '';
     position: fixed;
