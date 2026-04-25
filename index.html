@@ -289,7 +289,7 @@
     </div>
     <div class="header-right">
       <div class="offline-badge"><div class="offline-dot"></div>offline ready</div>
-      <div class="version">v10.2</div>
+      <div class="version">v10.3</div>
     </div>
   </header>
 
@@ -1190,7 +1190,16 @@
   function drawMap(lat1,lon1,lat2,lon2,waypoints){
     const hasRoute=!isNaN(lat1)&&!isNaN(lon1)&&!isNaN(lat2)&&!isNaN(lon2);
     const canvas=document.getElementById('map');if(!canvas)return;
-    const W=canvas.offsetWidth,H=340;canvas.width=W;canvas.height=H;
+
+    // ── Fix: canvas.offsetWidth can be 0 on first load before layout
+    let W=canvas.offsetWidth||canvas.parentElement?.clientWidth||canvas.parentElement?.offsetWidth||window.innerWidth||800;
+    if(W<100){
+      // Layout not ready yet — retry after a short delay
+      setTimeout(()=>drawMap(lat1,lon1,lat2,lon2,waypoints),80);
+      return;
+    }
+    const H=340;
+    canvas.width=W;canvas.height=H;
     const ctx=canvas.getContext('2d');
 
     // ── Background
@@ -1724,7 +1733,11 @@
 
   // v10.2 — smart zoom build 20250425
   // Draw territory-only map immediately on load
-  requestAnimationFrame(()=>drawMap(NaN,NaN,NaN,NaN,null));
+  function initMap(){
+    requestAnimationFrame(()=>drawMap(NaN,NaN,NaN,NaN,null));
+  }
+  if(document.readyState==='complete'){initMap();}
+  else{window.addEventListener('load',initMap);}
 
   loadPreset('taipei','singapore');
 </script>
